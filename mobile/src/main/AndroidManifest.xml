@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- PERMISO DE INTERNET OBLIGATORIO -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -22,7 +25,7 @@
             </intent-filter>
         </activity>
 
-        <!-- AQUÍ AGREGAS TU NUEVA ACTIVIDAD DE AGENDAR -->
+        <!-- Actividad de Agendar Asesoría -->
         <activity
             android:name=".AgendarAsesoria"
             android:exported="false" />
