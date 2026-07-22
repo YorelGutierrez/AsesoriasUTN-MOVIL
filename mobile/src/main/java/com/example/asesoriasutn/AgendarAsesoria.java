@@ -95,6 +95,12 @@ public class AgendarAsesoria extends AppCompatActivity {
                     return;
                 }
 
+                // Validación para evitar que envíen el texto por defecto del Paso 3
+                if (spinnerAlumnos.getSelectedItemPosition() == 0) {
+                    Toast.makeText(AgendarAsesoria.this, "Por favor selecciona un alumno", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 String alumnoSeleccionado = spinnerAlumnos.getSelectedItem().toString();
                 String tema = etTema.getText().toString().trim();
                 String objetivo = etObjetivo.getText().toString().trim();
@@ -125,6 +131,9 @@ public class AgendarAsesoria extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Alumno> listaAlumnos = response.body();
                     List<String> nombresAlumnos = new ArrayList<>();
+
+                    // PASO 3: Agregar opción por defecto en el Spinner
+                    nombresAlumnos.add("Selecciona un alumno...");
 
                     for (Alumno a : listaAlumnos) {
                         nombresAlumnos.add(a.getNombre());
@@ -178,5 +187,4 @@ public class AgendarAsesoria extends AppCompatActivity {
             }
         });
     }
-
 }

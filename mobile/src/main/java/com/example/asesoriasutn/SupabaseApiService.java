@@ -7,9 +7,11 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 
 public interface SupabaseApiService {
-    @GET("rest/v1/alumnos")
+
+    // Cambia "alumnos" por el nombre exacto de tu tabla en Supabase si es diferente
+    @GET("rest/v1/alumnos?select=*")
     Call<List<Alumno>> getAlumnos();
 
-    @POST("rest/v1/asesorias")
-    Call<Void> registrarAsesoria(@Body AsesoriaRequest request);
+    @POST("rest/v1/asesorias") // Cambia por tu tabla de registros de asesorías
+    Call<Void> registrarAsesoria(@Body AsesoriaRequest asesoria);
 }
