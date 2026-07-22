@@ -1,15 +1,13 @@
 package com.example.asesoriasutn;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -19,19 +17,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
+        // 1. Vincular los elementos del XML usando tus IDs exactos
         txtCorreo = findViewById(R.id.txtCorreo);
         txtPassword = findViewById(R.id.txtPassword);
         btnLogin = findViewById(R.id.btnLogin);
 
+        // 2. Configurar la acción del botón
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -39,11 +32,22 @@ public class MainActivity extends AppCompatActivity {
                 String password = txtPassword.getText().toString().trim();
 
                 if (correo.isEmpty() || password.isEmpty()) {
-                    Toast.makeText(MainActivity.this, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(MainActivity.this, "Conectando al servidor...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Por favor ingresa tu correo y contraseña", Toast.LENGTH_SHORT).show();
+                    return;
                 }
+
+                // Lógica de inicio de sesión aislada en esta rama
+                procesarLogin(correo, password);
             }
         });
+    }
+
+    private void procesarLogin(String correo, String password) {
+        Log.d("LOGIN_UTN", "Intentando acceder con: " + correo);
+        Toast.makeText(this, "¡Bienvenido, Maestro!", Toast.LENGTH_SHORT).show();
+
+        // Muestra la pantalla de agendar al ingresar
+        Intent intent = new Intent(MainActivity.this, Agendar.class);
+        startActivity(intent);
     }
 }
