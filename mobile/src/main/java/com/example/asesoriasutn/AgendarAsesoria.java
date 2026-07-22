@@ -177,7 +177,7 @@ public class AgendarAsesoria extends AppCompatActivity {
                     Toast.makeText(AgendarAsesoria.this, "¡Asesoría agendada con éxito!", Toast.LENGTH_LONG).show();
                     finish();
                 } else {
-                    Toast.makeText(AgendarAsesoria.this, "Error al guardar: " + response.code(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AgendarAsesoria.this, "Error al guardar la asesoria: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
             }
 
