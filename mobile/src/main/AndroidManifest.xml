@@ -11,15 +11,22 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AsesoriasUTN">
+
+        <!-- Actividad principal (Login) -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- AQUÍ AGREGAS TU NUEVA ACTIVIDAD DE AGENDAR -->
+        <activity
+            android:name=".AgendarAsesoria"
+            android:exported="false" />
+
     </application>
 
 </manifest>
