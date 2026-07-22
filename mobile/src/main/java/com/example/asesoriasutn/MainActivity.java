@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "¡Bienvenido, Maestro!", Toast.LENGTH_SHORT).show();
 
         // Muestra la pantalla de agendar al ingresar
-        Intent intent = new Intent(MainActivity.this, Agendar.class);
+        Intent intent = new Intent(MainActivity.this, AgendarAsesoria.class);
         startActivity(intent);
     }
 }
