@@ -1,3 +1,15 @@
 <resources>
-    <string name="app_name">AsesoriasUTN</string>
+    <string name="app_name">Asesorías UTN</string>
+
+    <!-- Textos del Login -->
+    <string name="title_login">Asesorías UTN</string>
+    <string name="subtitle_login">Bienvenido. Inicia sesión para continuar</string>
+    <string name="hint_email">Correo electrónico</string>
+    <string name="hint_password">Contraseña</string>
+    <string name="btn_login">Iniciar sesión</string>
+
+    <!-- Descripciones de accesibilidad para iconos -->
+    <string name="desc_icon_school">Icono de escuela</string>
+    <string name="desc_icon_email">Icono de correo</string>
+    <string name="desc_icon_lock">Icono de candado</string>
 </resources>
