@@ -36,7 +36,7 @@ public class AgendarAsesoria extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_agendar);
+        setContentView(R.layout.activity_agendar_asesoria);
 
         // 1. Vincular los elementos del XML con Java
         spinnerAlumnos = findViewById(R.id.spinnerAlumnos);
