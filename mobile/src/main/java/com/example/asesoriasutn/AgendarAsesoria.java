@@ -1,6 +1,10 @@
 package com.example.asesoriasutn;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.TimePickerDialog;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -12,6 +16,9 @@ import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -260,8 +267,21 @@ public class AgendarAsesoria extends AppCompatActivity {
                 runOnUiThread(() -> {
                     if (response.isSuccessful()) {
                         Toast.makeText(AgendarAsesoria.this, "¡Asesoría agendada con éxito!", Toast.LENGTH_LONG).show();
+
+                        // Lanza la notificación local tras registrarse con éxito en la tabla sesiones_de_asesoria
+                        lanzarNotificacionAsesoria(tema, fecha + " a las " + hora);
+
                         finish();
                     } else {
+                        String errorBody = "";
+                        try {
+                            if (response.errorBody() != null) {
+                                errorBody = response.errorBody().string();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        Log.e("SUPABASE_ERROR", "Error al guardar asesoría: " + response.code() + " - " + errorBody);
                         Toast.makeText(AgendarAsesoria.this, "Error al guardar la asesoría: " + response.code(), Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -274,5 +294,36 @@ public class AgendarAsesoria extends AppCompatActivity {
                 });
             }
         });
+    }
+
+    private void lanzarNotificacionAsesoria(String tema, String fechaHora) {
+        String CHANNEL_ID = "canal_asesorias";
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Asesorías Canal";
+            String description = "Notificaciones de nuevas asesorías agendadas";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(android.R.drawable.ic_menu_agenda)
+                .setContentTitle("¡Nueva Asesoría Agendada!")
+                .setContentText("Tema: " + tema + " | Programada para: " + fechaHora)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            notificationManager.notify((int) System.currentTimeMillis(), builder.build());
+        }
     }
 }
