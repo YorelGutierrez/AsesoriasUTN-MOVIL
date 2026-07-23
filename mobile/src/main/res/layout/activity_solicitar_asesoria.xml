@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F6FA"
+    tools:context=".SolicitarAsesoria">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- TÍTULO PRINCIPAL -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Solicitar Asesoría"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#1F2937"
+            android:layout_marginBottom="16dp" />
+
+        <!-- CAJA DE INSTRUCCIONES -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="#E6F4EA">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Instrucciones:"
+                    android:textStyle="bold"
+                    android:textColor="#137333"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="1. Selecciona la persona con quien deseas la asesoría.\n2. Elige una fecha y hora disponible.\n3. Completa los detalles y envía la solicitud."
+                    android:textColor="#1F2937"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- SECCIÓN: SELECCIONAR MAESTRO (Spinner cambiado) -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Seleccionar Docente"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#1F2937"
+            android:layout_marginBottom="10dp" />
+
+        <Spinner
+            android:id="@+id/spinnerDocentes"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@android:drawable/editbox_background_normal"
+            android:padding="8dp"
+            android:layout_marginBottom="20dp" />
+
+        <!-- SECCIÓN: DETALLES DE LA SESIÓN -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Detalles de la Sesión"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#1F2937"
+            android:layout_marginBottom="10dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Consejo:"
+            android:textStyle="bold"
+            android:textColor="#137333"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Prepara las preguntas que quieras resolver durante la asesoría"
+            android:textColor="#1F2937"
+            android:textSize="14sp" />
+
+
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="¿Qué quieres aprender?"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="#1F2937"
+            android:layout_marginBottom="8dp"/>
+
+        <EditText
+            android:id="@+id/etQueAprender"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:background="@drawable/bg_edittext"
+            android:gravity="top|start"
+            android:hint="Ej. Me gustaría repasar derivadas, necesito ayuda con programación..."
+            android:inputType="textMultiLine"
+            android:minLines="4"
+            android:maxLines="6"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp"/>
+
+        <CheckBox
+            android:id="@+id/chkConocimiento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="¿Ya tienes conocimiento previo sobre el tema?"
+            android:layout_marginBottom="8dp"/>
+
+        <CheckBox
+            android:id="@+id/chkMaterial"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="¿Necesitas material de apoyo o ejercicios?"
+            android:layout_marginBottom="8dp"/>
+
+        <CheckBox
+            android:id="@+id/chkEjercicios"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="¿Tienes ejercicios específicos que quieres resolver?"
+            android:layout_marginBottom="20dp"/>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:hint="Objetivo específico de la asesoría">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etObjetivo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:lines="3" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Modalidad *"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="#1F2937"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="8dp"/>
+
+        <Spinner
+            android:id="@+id/spModalidad"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/bg_spinner"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:layout_marginBottom="20dp"/>
+
+
+        <!-- SECCIÓN: ELEGIR FECHA Y HORA -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Elegir Fecha y Hora"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#1F2937"
+            android:layout_marginBottom="10dp" />
+
+        <!-- Calendario nativo de Android -->
+        <CalendarView
+            android:id="@+id/calendarView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:layout_marginBottom="15dp" />
+
+        <!-- NUEVO: Selector de Hora (TimePicker o Botón desplegable de hora) -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:hint="Hora de la asesoría (ej. 10:00 AM)">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etHora"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusable="false"
+                android:clickable="true"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- BOTÓN FINAL DE AGENDAR -->
+        <Button
+            android:id="@+id/btnEnviarSolicitud"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enviar Solicitud"
+            android:padding="16dp"
+            android:textSize="16sp"
+            android:backgroundTint="#0D9488"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="30dp" />
+
+    </LinearLayout>
+</ScrollView>
