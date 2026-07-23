@@ -33,7 +33,7 @@
 
         <!-- Actividad de Solicitar Asesoría (Docente) -->
         <activity
-            android:name=".SolicitarAsesoria"
+            android:name=".SolicitudDocente"
             android:exported="false" />
 
     </application>
