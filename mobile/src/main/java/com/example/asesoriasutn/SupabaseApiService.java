@@ -10,7 +10,7 @@ import retrofit2.http.Body;
 public interface SupabaseApiService {
 
     @Headers("Accept: application/json")
-    @GET("rest/v1/users?select=*")
+    @GET("rest/v1/alumnos?select=id,users!user_id(nombres,apellido_paterno),grupos!grupo_id(id,nombre)")
     Call<List<Alumno>> getAlumnos();
 
     @POST("rest/v1/asesorias")

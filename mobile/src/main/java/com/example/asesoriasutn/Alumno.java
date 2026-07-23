@@ -6,29 +6,32 @@ public class Alumno {
     @SerializedName("id")
     private int id;
 
-    @SerializedName("nombres")
-    private String nombres;
+    @SerializedName("users")
+    private UserData user;
 
-    @SerializedName("apellido_paterno")
-    private String apellidoPaterno;
+    @SerializedName("grupos")
+    private Grupo grupo;
 
-    // Constructor vacío requerido por Gson
     public Alumno() {}
 
     public int getId() {
         return id;
     }
 
-    public String getNombres() {
-        return nombres;
+    public UserData getUser() {
+        return user;
     }
 
-    public String getApellidoPaterno() {
-        return apellidoPaterno;
+    public Grupo getGrupo() {
+        return grupo;
     }
 
-    // Opcional: Si quieres mostrar el nombre completo en el Spinner
     public String getNombreCompleto() {
-        return nombres + (apellidoPaterno != null ? " " + apellidoPaterno : "");
+        if (user != null) {
+            String nombres = user.getNombres() != null ? user.getNombres() : "";
+            String apellidoPaterno = user.getApellidoPaterno() != null ? " " + user.getApellidoPaterno() : "";
+            return (nombres + apellidoPaterno).trim();
+        }
+        return "Sin nombre";
     }
 }

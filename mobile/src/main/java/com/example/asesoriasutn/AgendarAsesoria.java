@@ -4,6 +4,7 @@ import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CalendarView;
@@ -31,19 +32,21 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class AgendarAsesoria extends AppCompatActivity {
 
-    private Spinner spinnerAlumnos;
+    private Spinner spinnerGrupos, spinnerAlumnos;
     private TextInputEditText etTema, etObjetivo, etHora;
     private CalendarView calendarView;
     private Button btnAgendarSesion;
     private String fechaSeleccionada = "";
 
     private List<Alumno> listaAlumnosGlobal = new ArrayList<>();
+    private List<Alumno> listaAlumnosFiltrada = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_agendar_asesoria);
 
+        spinnerGrupos = findViewById(R.id.spinnerGrupos);
         spinnerAlumnos = findViewById(R.id.spinnerAlumnos);
         etTema = findViewById(R.id.etTema);
         etObjetivo = findViewById(R.id.etObjetivo);
@@ -86,17 +89,36 @@ public class AgendarAsesoria extends AppCompatActivity {
             }
         });
 
+        // Evento para filtrar los alumnos cuando se seleccione un grupo
+        spinnerGrupos.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (position > 0) {
+                    String grupoSeleccionado = parent.getItemAtPosition(position).toString();
+                    filtrarAlumnosPorGrupo(grupoSeleccionado);
+                } else {
+                    listaAlumnosFiltrada.clear();
+                    List<String> limpiar = new ArrayList<>();
+                    limpiar.add("Selecciona un alumno...");
+                    actualizarSpinnerAlumnos(limpiar);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
         btnAgendarSesion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (listaAlumnosGlobal == null || listaAlumnosGlobal.isEmpty()) {
-                    Toast.makeText(AgendarAsesoria.this, "La lista de alumnos aún está cargando", Toast.LENGTH_SHORT).show();
+                if (listaAlumnosFiltrada == null || listaAlumnosFiltrada.isEmpty()) {
+                    Toast.makeText(AgendarAsesoria.this, "Selecciona un grupo y un alumno válido", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 int posicionSeleccionada = spinnerAlumnos.getSelectedItemPosition();
                 if (posicionSeleccionada <= 0) {
-                    Toast.makeText(AgendarAsesoria.this, "Por favor selecciona un alumno válido", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AgendarAsesoria.this, "Por favor selecciona un alumno", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -110,8 +132,8 @@ public class AgendarAsesoria extends AppCompatActivity {
                 }
 
                 int indiceReal = posicionSeleccionada - 1;
-                if (indiceReal < listaAlumnosGlobal.size()) {
-                    int idAlumnoSeleccionado = listaAlumnosGlobal.get(indiceReal).getId();
+                if (indiceReal < listaAlumnosFiltrada.size()) {
+                    int idAlumnoSeleccionado = listaAlumnosFiltrada.get(indiceReal).getId();
                     guardarSesionEnSupabase(String.valueOf(idAlumnoSeleccionado), tema, objetivo, fechaSeleccionada, hora);
                 } else {
                     Toast.makeText(AgendarAsesoria.this, "Error en la selección del alumno", Toast.LENGTH_SHORT).show();
@@ -152,25 +174,42 @@ public class AgendarAsesoria extends AppCompatActivity {
                 runOnUiThread(() -> {
                     if (response.isSuccessful() && response.body() != null) {
                         listaAlumnosGlobal = response.body();
-                        List<String> nombresAlumnos = new ArrayList<>();
+                        List<String> listaGrupos = new ArrayList<>();
+                        listaGrupos.add("Selecciona un grupo...");
 
-                        nombresAlumnos.add("Selecciona un alumno...");
-
+                        // Extraer los nombres de los grupos sin repetir
                         for (Alumno a : listaAlumnosGlobal) {
-                            nombresAlumnos.add(a.getNombreCompleto());
+                            if (a.getGrupo() != null) {
+                                String nombreGrupo = a.getGrupo().getNombre();
+                                Log.d("GRUPO_DEBUG", "Grupo detectado: " + nombreGrupo);
+                                if (nombreGrupo != null && !listaGrupos.contains(nombreGrupo)) {
+                                    listaGrupos.add(nombreGrupo);
+                                }
+                            } else {
+                                Log.d("GRUPO_DEBUG", "Un alumno tiene el objeto grupo en nulo");
+                            }
                         }
 
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                        ArrayAdapter<String> adapterGrupos = new ArrayAdapter<>(
                                 AgendarAsesoria.this,
                                 android.R.layout.simple_spinner_item,
-                                nombresAlumnos
+                                listaGrupos
                         );
-                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                        spinnerAlumnos.setAdapter(adapter);
+                        adapterGrupos.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        spinnerGrupos.setAdapter(adapterGrupos);
 
                     } else {
-                        Log.e("SUPABASE_ERROR", "Error al cargar alumnos: " + response.code());
-                        Toast.makeText(AgendarAsesoria.this, "Error al cargar alumnos: " + response.code(), Toast.LENGTH_SHORT).show();
+                        String errorBody = "";
+                        try {
+                            if (response.errorBody() != null) {
+                                errorBody = response.errorBody().string();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        Log.e("SUPABASE_ERROR", "Error " + response.code() + " - Detalle: " + errorBody);
+                        Toast.makeText(AgendarAsesoria.this, "Error al cargar datos: " + response.code(), Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -178,11 +217,36 @@ public class AgendarAsesoria extends AppCompatActivity {
             @Override
             public void onFailure(Call<List<Alumno>> call, Throwable t) {
                 runOnUiThread(() -> {
-                    Log.e("SUPABASE_FALLO", "Fallo de red al buscar alumnos: " + t.getMessage());
+                    Log.e("SUPABASE_FALLO", "Fallo de red: " + t.getMessage());
                     Toast.makeText(AgendarAsesoria.this, "Fallo de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 });
             }
         });
+    }
+
+    private void filtrarAlumnosPorGrupo(String grupoSeleccionado) {
+        listaAlumnosFiltrada.clear();
+        List<String> nombresAlumnos = new ArrayList<>();
+        nombresAlumnos.add("Selecciona un alumno...");
+
+        for (Alumno a : listaAlumnosGlobal) {
+            if (a.getGrupo() != null && grupoSeleccionado.equals(a.getGrupo().getNombre())) {
+                listaAlumnosFiltrada.add(a);
+                nombresAlumnos.add(a.getNombreCompleto());
+            }
+        }
+
+        actualizarSpinnerAlumnos(nombresAlumnos);
+    }
+
+    private void actualizarSpinnerAlumnos(List<String> nombres) {
+        ArrayAdapter<String> adapterAlumnos = new ArrayAdapter<>(
+                AgendarAsesoria.this,
+                android.R.layout.simple_spinner_item,
+                nombres
+        );
+        adapterAlumnos.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerAlumnos.setAdapter(adapterAlumnos);
     }
 
     private void guardarSesionEnSupabase(String alumnoId, String tema, String objetivo, String fecha, String hora) {
