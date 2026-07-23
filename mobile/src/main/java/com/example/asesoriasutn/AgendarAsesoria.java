@@ -14,11 +14,15 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -33,12 +37,13 @@ public class AgendarAsesoria extends AppCompatActivity {
     private Button btnAgendarSesion;
     private String fechaSeleccionada = "";
 
+    private List<Alumno> listaAlumnosGlobal = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_agendar_asesoria);
 
-        // 1. Vincular los elementos del XML con Java
         spinnerAlumnos = findViewById(R.id.spinnerAlumnos);
         etTema = findViewById(R.id.etTema);
         etObjetivo = findViewById(R.id.etObjetivo);
@@ -46,15 +51,12 @@ public class AgendarAsesoria extends AppCompatActivity {
         calendarView = findViewById(R.id.calendarView);
         btnAgendarSesion = findViewById(R.id.btnAgendarSesion);
 
-        // Configuración inicial del calendario
         calendarView.setFirstDayOfWeek(Calendar.MONDAY);
         calendarView.setShowWeekNumber(false);
         calendarView.setMinDate(System.currentTimeMillis() - 1000);
 
-        // 2. Cargar los alumnos desde Supabase para llenar el Spinner
         cargarAlumnosDesdeSupabase();
 
-        // 3. Obtener la fecha inicial del calendario
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         fechaSeleccionada = sdf.format(new java.util.Date(calendarView.getDate()));
 
@@ -65,7 +67,6 @@ public class AgendarAsesoria extends AppCompatActivity {
             }
         });
 
-        // 4. Configurar el selector de Hora al hacer clic en el campo de texto de hora
         etHora.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -76,32 +77,29 @@ public class AgendarAsesoria extends AppCompatActivity {
                 TimePickerDialog timePickerDialog = new TimePickerDialog(AgendarAsesoria.this, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        // Formato de hora am/pm o 24 hrs limpio
                         String horaFormateada = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute);
                         etHora.setText(horaFormateada);
                     }
-                }, horaActual, minutoActual, true); // true para formato de 24 horas, false para AM/PM
+                }, horaActual, minutoActual, true);
 
                 timePickerDialog.show();
             }
         });
 
-        // 5. Acción al presionar el botón "Agendar Sesión"
         btnAgendarSesion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (spinnerAlumnos.getSelectedItem() == null) {
-                    Toast.makeText(AgendarAsesoria.this, "Cargando alumnos...", Toast.LENGTH_SHORT).show();
+                if (listaAlumnosGlobal == null || listaAlumnosGlobal.isEmpty()) {
+                    Toast.makeText(AgendarAsesoria.this, "La lista de alumnos aún está cargando", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                // Validación para evitar que envíen el texto por defecto del Paso 3
-                if (spinnerAlumnos.getSelectedItemPosition() == 0) {
-                    Toast.makeText(AgendarAsesoria.this, "Por favor selecciona un alumno", Toast.LENGTH_SHORT).show();
+                int posicionSeleccionada = spinnerAlumnos.getSelectedItemPosition();
+                if (posicionSeleccionada <= 0) {
+                    Toast.makeText(AgendarAsesoria.this, "Por favor selecciona un alumno válido", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                String alumnoSeleccionado = spinnerAlumnos.getSelectedItem().toString();
                 String tema = etTema.getText().toString().trim();
                 String objetivo = etObjetivo.getText().toString().trim();
                 String hora = etHora.getText().toString().trim();
@@ -111,79 +109,105 @@ public class AgendarAsesoria extends AppCompatActivity {
                     return;
                 }
 
-                // Llamar a la función para guardar la asesoría con fecha y hora
-                guardarSesionEnSupabase(alumnoSeleccionado, tema, objetivo, fechaSeleccionada, hora);
+                int indiceReal = posicionSeleccionada - 1;
+                if (indiceReal < listaAlumnosGlobal.size()) {
+                    int idAlumnoSeleccionado = listaAlumnosGlobal.get(indiceReal).getId();
+                    guardarSesionEnSupabase(String.valueOf(idAlumnoSeleccionado), tema, objetivo, fechaSeleccionada, hora);
+                } else {
+                    Toast.makeText(AgendarAsesoria.this, "Error en la selección del alumno", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
 
-    private void cargarAlumnosDesdeSupabase() {
-        Retrofit retrofit = new Retrofit.Builder()
+    private Retrofit obtenerRetrofitConAuth() {
+        final String apiKey = "sb_publishable_8hbEGvtOKw3SvnVz7apPlg_KWVdL5xe";
+
+        OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new Interceptor() {
+            @Override
+            public okhttp3.Response intercept(Chain chain) throws IOException {
+                Request original = chain.request();
+                Request request = original.newBuilder()
+                        .header("apikey", apiKey)
+                        .header("Authorization", "Bearer " + apiKey)
+                        .method(original.method(), original.body())
+                        .build();
+                return chain.proceed(request);
+            }
+        }).build();
+
+        return new Retrofit.Builder()
                 .baseUrl("https://jxeftmhxwjiolbxiklyc.supabase.co/")
+                .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
+    }
 
-        SupabaseApiService apiService = retrofit.create(SupabaseApiService.class);
+    private void cargarAlumnosDesdeSupabase() {
+        SupabaseApiService apiService = obtenerRetrofitConAuth().create(SupabaseApiService.class);
 
         apiService.getAlumnos().enqueue(new Callback<List<Alumno>>() {
             @Override
             public void onResponse(Call<List<Alumno>> call, Response<List<Alumno>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    List<Alumno> listaAlumnos = response.body();
-                    List<String> nombresAlumnos = new ArrayList<>();
+                runOnUiThread(() -> {
+                    if (response.isSuccessful() && response.body() != null) {
+                        listaAlumnosGlobal = response.body();
+                        List<String> nombresAlumnos = new ArrayList<>();
 
-                    // PASO 3: Agregar opción por defecto en el Spinner
-                    nombresAlumnos.add("Selecciona un alumno...");
+                        nombresAlumnos.add("Selecciona un alumno...");
 
-                    for (Alumno a : listaAlumnos) {
-                        nombresAlumnos.add(a.getNombre());
+                        for (Alumno a : listaAlumnosGlobal) {
+                            nombresAlumnos.add(a.getNombreCompleto());
+                        }
+
+                        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                                AgendarAsesoria.this,
+                                android.R.layout.simple_spinner_item,
+                                nombresAlumnos
+                        );
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        spinnerAlumnos.setAdapter(adapter);
+
+                    } else {
+                        Log.e("SUPABASE_ERROR", "Error al cargar alumnos: " + response.code());
+                        Toast.makeText(AgendarAsesoria.this, "Error al cargar alumnos: " + response.code(), Toast.LENGTH_SHORT).show();
                     }
-
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                            AgendarAsesoria.this,
-                            android.R.layout.simple_spinner_item,
-                            nombresAlumnos
-                    );
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    spinnerAlumnos.setAdapter(adapter);
-
-                } else {
-                    Log.e("SUPABASE_ERROR", "Error al cargar alumnos: " + response.code());
-                }
+                });
             }
 
             @Override
             public void onFailure(Call<List<Alumno>> call, Throwable t) {
-                Log.e("SUPABASE_FALLO", "Fallo de red al buscar alumnos: " + t.getMessage());
+                runOnUiThread(() -> {
+                    Log.e("SUPABASE_FALLO", "Fallo de red al buscar alumnos: " + t.getMessage());
+                    Toast.makeText(AgendarAsesoria.this, "Fallo de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                });
             }
         });
     }
 
-    private void guardarSesionEnSupabase(String alumno, String tema, String objetivo, String fecha, String hora) {
-        // Asegúrate de incluir la hora en tu clase AsesoriaRequest si lo requiere tu base de datos
-        AsesoriaRequest nuevaAsesoria = new AsesoriaRequest(alumno, tema, objetivo, fecha + " " + hora);
+    private void guardarSesionEnSupabase(String alumnoId, String tema, String objetivo, String fecha, String hora) {
+        AsesoriaRequest nuevaAsesoria = new AsesoriaRequest(alumnoId, tema, objetivo, fecha + " " + hora);
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://jxeftmhxwjiolbxiklyc.supabase.co/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        SupabaseApiService apiService = retrofit.create(SupabaseApiService.class);
+        SupabaseApiService apiService = obtenerRetrofitConAuth().create(SupabaseApiService.class);
 
         apiService.registrarAsesoria(nuevaAsesoria).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(AgendarAsesoria.this, "¡Asesoría agendada con éxito!", Toast.LENGTH_LONG).show();
-                    finish();
-                } else {
-                    Toast.makeText(AgendarAsesoria.this, "Error al guardar la asesoria: " + response.code(), Toast.LENGTH_SHORT).show();
-                }
+                runOnUiThread(() -> {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(AgendarAsesoria.this, "¡Asesoría agendada con éxito!", Toast.LENGTH_LONG).show();
+                        finish();
+                    } else {
+                        Toast.makeText(AgendarAsesoria.this, "Error al guardar la asesoría: " + response.code(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
-                Toast.makeText(AgendarAsesoria.this, "Fallo de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                runOnUiThread(() -> {
+                    Toast.makeText(AgendarAsesoria.this, "Fallo de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                });
             }
         });
     }
