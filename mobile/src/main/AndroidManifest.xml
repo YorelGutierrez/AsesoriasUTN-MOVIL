@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
     <!-- PERMISO DE INTERNET OBLIGATORIO -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
@@ -15,35 +14,31 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AsesoriasUTN">
-
+        <activity
+            android:name=".perfil_docente"
+            android:exported="false" />
         <!-- Actividad principal (Login) -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <!-- Actividad de Agendar Asesoría -->
+        </activity> <!-- Actividad de Agendar Asesoría -->
         <activity
             android:name=".AgendarAsesoria"
             android:exported="false" />
-
-
-        <activity android:name=".MenuAdminActivity" android:exported="false" />
-
-        <!-- Actividad de Solicitar Asesoría (Docente) -->
+        <activity
+            android:name=".MenuAdminActivity"
+            android:exported="false" /> <!-- Menú de Administrador -->
+        <activity
+            android:name=".MenuAdminActivity"
+            android:exported="false" /> <!-- Actividad de Solicitar Asesoría (Docente) -->
         <activity
             android:name=".SolicitudDocente"
             android:exported="false" />
-
-        <!-- Menú de Administrador -->
-        <activity
-            android:name=".MenuAdminActivity"
-            android:exported="false" />
-
     </application>
 
 </manifest>
