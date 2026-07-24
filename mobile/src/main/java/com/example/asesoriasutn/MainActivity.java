@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                // Lógica de inicio de sesión aislada en esta rama
+                // Lógica de validación según el tipo de correo
                 procesarLogin(correo, password);
             }
         });
@@ -44,10 +44,37 @@ public class MainActivity extends AppCompatActivity {
 
     private void procesarLogin(String correo, String password) {
         Log.d("LOGIN_UTN", "Intentando acceder con: " + correo);
-        Toast.makeText(this, "¡Bienvenido, Maestro!", Toast.LENGTH_SHORT).show();
+        String correoMinuscula = correo.toLowerCase();
 
-        // Muestra la pantalla de agendar al ingresar
-        Intent intent = new Intent(MainActivity.this, AgendarAsesoria.class);
-        startActivity(intent);
+        // Validar si el correo pertenece a la institución
+        if (!correoMinuscula.endsWith("@utnay.edu.mx")) {
+            Toast.makeText(this, "El correo debe pertenecer al dominio @utnay.edu.mx", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // 1. CASO ADMINISTRADOR
+        if (correoMinuscula.equals("admin@utnay.edu.mx")) {
+            Toast.makeText(this, "¡Bienvenido Administrador!", Toast.LENGTH_SHORT).show();
+            // Acceso total: lo mandamos a la programación de asesorías (vista docente)
+            Intent intent = new Intent(MainActivity.this, AgendarAsesoria.class);
+            startActivity(intent);
+            return;
+        }
+
+        // 2. CASO ALUMNO (Contiene guion y números, ej: tic-310010)
+        String usuario = correoMinuscula.split("@")[0];
+        if (usuario.contains("-") || usuario.matches(".*\\d.*")) {
+            Toast.makeText(this, "¡Bienvenido Alumno!", Toast.LENGTH_SHORT).show();
+
+            Intent intent = new Intent(MainActivity.this, SolicitudDocente.class);
+            startActivity(intent);
+
+        } else {
+            // 3. CASO DOCENTE (ej: juan@utnay.edu.mx)
+            Toast.makeText(this, "¡Bienvenido Docente!", Toast.LENGTH_SHORT).show();
+
+            Intent intent = new Intent(MainActivity.this, AgendarAsesoria.class);
+            startActivity(intent);
+        }
     }
 }
