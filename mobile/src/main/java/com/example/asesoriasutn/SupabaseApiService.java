@@ -14,7 +14,7 @@ public interface SupabaseApiService {
     Call<List<Alumno>> getAlumnos();
 
     @Headers("Accept: application/json")
-    @GET("rest/v1/users?select=id,nombres,apellido_paterno&rol=eq.docentes")
+    @GET("rest/v1/users?select=id,nombres,apellido_paterno&rol=eq.docente")
     Call<List<Docente>> getDocentes();
 
     @Headers("Accept: application/json")
