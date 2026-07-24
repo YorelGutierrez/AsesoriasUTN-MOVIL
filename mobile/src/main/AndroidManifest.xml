@@ -31,6 +31,9 @@
             android:name=".AgendarAsesoria"
             android:exported="false" />
 
+
+        <activity android:name=".MenuAdminActivity" android:exported="false" />
+
         <!-- Actividad de Solicitar Asesoría (Docente) -->
         <activity
             android:name=".SolicitudDocente"

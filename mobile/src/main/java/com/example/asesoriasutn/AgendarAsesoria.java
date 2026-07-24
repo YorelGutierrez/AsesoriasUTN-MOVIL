@@ -12,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CalendarView;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -19,8 +20,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
-
-import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,7 +39,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class AgendarAsesoria extends AppCompatActivity {
 
     private Spinner spinnerGrupos, spinnerAlumnos;
-    private TextInputEditText etTema, etObjetivo, etHora;
+    private EditText etTema, etObjetivo, etHora;
     private CalendarView calendarView;
     private Button btnAgendarSesion;
     private String fechaSeleccionada = "";
