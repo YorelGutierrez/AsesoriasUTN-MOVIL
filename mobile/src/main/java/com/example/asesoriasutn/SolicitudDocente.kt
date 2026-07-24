@@ -137,15 +137,16 @@ class SolicitudDocente : AppCompatActivity() {
             if (indiceReal < listaDocentesGlobal.size) {
                 val idDocenteSeleccionado = listaDocentesGlobal[indiceReal].id
 
+                // Mapeo corregido acorde a la tabla solicitudes_asesoria en Supabase
                 val nuevaSolicitud = SolicitudAsesoriaRequest(
                     docenteId = idDocenteSeleccionado,
-                    tema = aprender,
+                    queAprender = aprender,
+                    conocimientoPrevio = tieneConocimiento,
+                    necesitaMaterial = necesitaMaterial,
+                    ejerciciosEspecificos = tieneEjercicios,
                     objetivo = objetivo,
                     modalidad = modalidad,
-                    fechaHora = "$fechaSeleccionada $hora",
-                    tieneConocimiento = tieneConocimiento,
-                    necesitaMaterial = necesitaMaterial,
-                    tieneEjercicios = tieneEjercicios
+                    fechaHora = "$fechaSeleccionada $hora:00"
                 )
 
                 guardarSolicitudEnSupabase(nuevaSolicitud)
@@ -165,7 +166,8 @@ class SolicitudDocente : AppCompatActivity() {
                         Toast.makeText(this@SolicitudDocente, "¡Solicitud enviada con éxito!", Toast.LENGTH_LONG).show()
                         finish()
                     } else {
-                        Log.e("SUPABASE_ERROR", "Error al guardar solicitud: ${response.code()}")
+                        val errorBody = response.errorBody()?.string() ?: ""
+                        Log.e("SUPABASE_ERROR", "Error al guardar solicitud: ${response.code()} - $errorBody")
                         Toast.makeText(this@SolicitudDocente, "Error al enviar: ${response.code()}", Toast.LENGTH_SHORT).show()
                     }
                 }
