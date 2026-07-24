@@ -12,4 +12,10 @@
     <string name="desc_icon_school">Icono de escuela</string>
     <string name="desc_icon_email">Icono de correo</string>
     <string name="desc_icon_lock">Icono de candado</string>
+
+    <string-array name="modalidad">
+        <item>Presencial</item>
+        <item>Virtual</item>
+        <item>Híbrida</item>
+    </string-array>
 </resources>

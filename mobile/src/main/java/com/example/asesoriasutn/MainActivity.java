@@ -55,8 +55,9 @@ public class MainActivity extends AppCompatActivity {
         // 1. CASO ADMINISTRADOR
         if (correoMinuscula.equals("admin@utnay.edu.mx")) {
             Toast.makeText(this, "¡Bienvenido Administrador!", Toast.LENGTH_SHORT).show();
-            // Acceso total: lo mandamos a la programación de asesorías (vista docente)
-            Intent intent = new Intent(MainActivity.this, AgendarAsesoria.class);
+
+            // Redirige al nuevo menú con las dos opciones para el administrador
+            Intent intent = new Intent(MainActivity.this, MenuAdminActivity.class);
             startActivity(intent);
             return;
         }

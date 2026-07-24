@@ -36,6 +36,11 @@
             android:name=".SolicitudDocente"
             android:exported="false" />
 
+        <!-- Menú de Administrador -->
+        <activity
+            android:name=".MenuAdminActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
