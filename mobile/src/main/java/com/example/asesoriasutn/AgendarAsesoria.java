@@ -3,6 +3,7 @@ package com.example.asesoriasutn;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,17 +14,22 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.TimePicker;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -38,7 +44,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class AgendarAsesoria extends AppCompatActivity {
 
-    private Spinner spinnerGrupos, spinnerAlumnos;
+    // Vistas de la barra superior
+    private ImageView btnRegresar, btnIconoCalendario, btnIconoNotificaciones;
+    private TextView tvAvatarUsuario;
+
+    // Vistas del formulario de agendar asesoría
+    private Spinner spinnerGrupos, spinnerAlumnos, spinnerModalidad;
     private EditText etTema, etObjetivo, etHora;
     private CalendarView calendarView;
     private Button btnAgendarSesion;
@@ -47,55 +58,60 @@ public class AgendarAsesoria extends AppCompatActivity {
     private List<Alumno> listaAlumnosGlobal = new ArrayList<>();
     private List<Alumno> listaAlumnosFiltrada = new ArrayList<>();
 
+    // Lista actualizada para almacenar las solicitudes hechas por los alumnos hacia este docente
+    private List<SolicitudAsesoriaRequest> listaSolicitudesBD = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_agendar_asesoria);
 
+        // Vincular elementos de la barra superior
+        btnRegresar = findViewById(R.id.btnRegresar);
+        btnIconoCalendario = findViewById(R.id.btnIconoCalendario);
+        btnIconoNotificaciones = findViewById(R.id.btnIconoNotificaciones);
+        tvAvatarUsuario = findViewById(R.id.tvAvatarUsuario);
+
+        // Vincular controles del formulario
         spinnerGrupos = findViewById(R.id.spinnerGrupos);
         spinnerAlumnos = findViewById(R.id.spinnerAlumnos);
+        spinnerModalidad = findViewById(R.id.spinnerModalidad);
         etTema = findViewById(R.id.etTema);
         etObjetivo = findViewById(R.id.etObjetivo);
         etHora = findViewById(R.id.etHora);
         calendarView = findViewById(R.id.calendarView);
         btnAgendarSesion = findViewById(R.id.btnAgendarSesion);
 
+        configurarBarraSuperiorYDinamismo();
+
+        // Configuración del calendario
         calendarView.setFirstDayOfWeek(Calendar.MONDAY);
         calendarView.setShowWeekNumber(false);
         calendarView.setMinDate(System.currentTimeMillis() - 1000);
 
         cargarAlumnosDesdeSupabase();
+        cargarSolicitudesDocenteDesdeSupabase();
 
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        fechaSeleccionada = sdf.format(new java.util.Date(calendarView.getDate()));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        fechaSeleccionada = sdf.format(new Date(calendarView.getDate()));
 
-        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
-            @Override
-            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
-                fechaSeleccionada = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth);
-            }
+        calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) ->
+                fechaSeleccionada = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth)
+        );
+
+        etHora.setOnClickListener(v -> {
+            Calendar c = Calendar.getInstance();
+            int horaActual = c.get(Calendar.HOUR_OF_DAY);
+            int minutoActual = c.get(Calendar.MINUTE);
+
+            TimePickerDialog timePickerDialog = new TimePickerDialog(AgendarAsesoria.this, (view, hourOfDay, minute) -> {
+                String horaFormateada = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute);
+                etHora.setText(horaFormateada);
+            }, horaActual, minutoActual, true);
+
+            timePickerDialog.show();
         });
 
-        etHora.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Calendar c = Calendar.getInstance();
-                int horaActual = c.get(Calendar.HOUR_OF_DAY);
-                int minutoActual = c.get(Calendar.MINUTE);
-
-                TimePickerDialog timePickerDialog = new TimePickerDialog(AgendarAsesoria.this, new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        String horaFormateada = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute);
-                        etHora.setText(horaFormateada);
-                    }
-                }, horaActual, minutoActual, true);
-
-                timePickerDialog.show();
-            }
-        });
-
-        // Evento para filtrar los alumnos cuando se seleccione un grupo
         spinnerGrupos.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -114,38 +130,185 @@ public class AgendarAsesoria extends AppCompatActivity {
             public void onNothingSelected(AdapterView<?> parent) {}
         });
 
-        btnAgendarSesion.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (listaAlumnosFiltrada == null || listaAlumnosFiltrada.isEmpty()) {
-                    Toast.makeText(AgendarAsesoria.this, "Selecciona un grupo y un alumno válido", Toast.LENGTH_SHORT).show();
-                    return;
+        btnAgendarSesion.setOnClickListener(v -> {
+            if (listaAlumnosFiltrada == null || listaAlumnosFiltrada.isEmpty()) {
+                Toast.makeText(AgendarAsesoria.this, "Selecciona un grupo y un alumno válido", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            int posicionSeleccionada = spinnerAlumnos.getSelectedItemPosition();
+            if (posicionSeleccionada <= 0) {
+                Toast.makeText(AgendarAsesoria.this, "Por favor selecciona un alumno", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String tema = etTema.getText().toString().trim();
+            String objetivo = etObjetivo.getText().toString().trim();
+            String hora = etHora.getText().toString().trim();
+            String modalidad = spinnerModalidad.getSelectedItem().toString();
+
+            if (tema.isEmpty() || objetivo.isEmpty() || hora.isEmpty()) {
+                Toast.makeText(AgendarAsesoria.this, "Por favor completa todos los campos y la hora", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            int indiceReal = posicionSeleccionada - 1;
+            if (indiceReal < listaAlumnosFiltrada.size()) {
+                int idAlumnoSeleccionado = listaAlumnosFiltrada.get(indiceReal).getId();
+
+                // Obtener datos del docente actual de forma segura desde el Intent
+                long docenteIdActual = obtenerIdDocenteActual();
+                String correoDocenteActual = getIntent().getStringExtra("USUARIO_EMAIL");
+                if (correoDocenteActual == null) correoDocenteActual = "docente@utnay.edu.mx";
+
+                // Obtener correo real del alumno seleccionado
+                String correoAlumno = listaAlumnosFiltrada.get(indiceReal).getCorreo();
+                if (correoAlumno == null || correoAlumno.isEmpty()) {
+                    correoAlumno = "alumno@utnay.edu.mx";
                 }
 
-                int posicionSeleccionada = spinnerAlumnos.getSelectedItemPosition();
-                if (posicionSeleccionada <= 0) {
-                    Toast.makeText(AgendarAsesoria.this, "Por favor selecciona un alumno", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                String tema = etTema.getText().toString().trim();
-                String objetivo = etObjetivo.getText().toString().trim();
-                String hora = etHora.getText().toString().trim();
-
-                if (tema.isEmpty() || objetivo.isEmpty() || hora.isEmpty()) {
-                    Toast.makeText(AgendarAsesoria.this, "Por favor completa todos los campos y la hora", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                int indiceReal = posicionSeleccionada - 1;
-                if (indiceReal < listaAlumnosFiltrada.size()) {
-                    int idAlumnoSeleccionado = listaAlumnosFiltrada.get(indiceReal).getId();
-                    guardarSesionEnSupabase(String.valueOf(idAlumnoSeleccionado), tema, objetivo, fechaSeleccionada, hora);
-                } else {
-                    Toast.makeText(AgendarAsesoria.this, "Error en la selección del alumno", Toast.LENGTH_SHORT).show();
-                }
+                guardarSesionEnSupabase(idAlumnoSeleccionado, tema, objetivo, fechaSeleccionada, hora, modalidad, docenteIdActual, correoAlumno, correoDocenteActual);
+            } else {
+                Toast.makeText(AgendarAsesoria.this, "Error en la selección del alumno", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private long obtenerIdDocenteActual() {
+        String docenteStr = getIntent().getStringExtra("DOCENTE_ID");
+        if (docenteStr != null && !docenteStr.isEmpty()) {
+            try {
+                return Long.parseLong(docenteStr);
+            } catch (NumberFormatException ignored) {}
+        }
+        return 92L;
+    }
+
+    private void configurarBarraSuperiorYDinamismo() {
+        String usuarioSesion = getIntent().getStringExtra("USUARIO_NOMBRE");
+        if (usuarioSesion == null || usuarioSesion.isEmpty()) {
+            usuarioSesion = "Docente";
+        }
+        String iniciales = usuarioSesion.length() >= 2 ? usuarioSesion.substring(0, 2).toUpperCase() : "DT";
+        tvAvatarUsuario.setText(iniciales);
+
+        tvAvatarUsuario.setOnClickListener(v -> mostrarDialogoCerrarSesionPersonalizado());
+        btnRegresar.setOnClickListener(v -> mostrarDialogoCerrarSesionPersonalizado());
+
+        // Botón Calendario: Muestra las solicitudes de asesoría hechas por los alumnos hacia este docente
+        btnIconoCalendario.setOnClickListener(v -> {
+            if (listaSolicitudesBD.isEmpty()) {
+                Toast.makeText(this, "No hay solicitudes de asesoría pendientes.", Toast.LENGTH_SHORT).show();
+            } else {
+                StringBuilder sb = new StringBuilder();
+                String nombreDocenteActual = getIntent().getStringExtra("USUARIO_NOMBRE");
+                if (nombreDocenteActual == null || nombreDocenteActual.isEmpty()) {
+                    nombreDocenteActual = "Docente";
+                }
+
+                for (SolicitudAsesoriaRequest solicitud : listaSolicitudesBD) {
+                    String fechaFormateada = formatearFechaLegible(solicitud.getFechaHora());
+
+                    sb.append("• Alumno: ").append(solicitud.getCorreoAlumno())
+                            .append("\n• Docente: ").append(nombreDocenteActual)
+                            .append("\n• Qué aprender: ").append(solicitud.getQueAprender())
+                            .append("\n• Objetivo: ").append(solicitud.getObjetivo())
+                            .append("\n• Modalidad: ").append(solicitud.getModalidad())
+                            .append("\n• Fecha y Hora: ").append(fechaFormateada)
+                            .append("\n\n----------------------------------\n\n");
+                }
+
+                mostrarDialogoPersonalizado("📅 Solicitudes de Alumnos", sb.toString().trim(), "Cerrar", null, false, null);
+            }
+        });
+
+        // Botón Notificaciones: Muestra la solicitud más reciente de los alumnos
+        btnIconoNotificaciones.setOnClickListener(v -> {
+            if (listaSolicitudesBD.isEmpty()) {
+                Toast.makeText(this, "No tienes notificaciones nuevas.", Toast.LENGTH_SHORT).show();
+            } else {
+                SolicitudAsesoriaRequest ultima = listaSolicitudesBD.get(listaSolicitudesBD.size() - 1);
+                String fechaFormateada = formatearFechaLegible(ultima.getFechaHora());
+
+                String mensajeNotificacion = "• Alumno Solicitante: " + ultima.getCorreoAlumno() +
+                        "\n• Qué aprender: " + ultima.getQueAprender() +
+                        "\n• Objetivo: " + ultima.getObjetivo() +
+                        "\n• Modalidad: " + ultima.getModalidad() +
+                        "\n• Programada para:\n  " + fechaFormateada;
+
+                mostrarDialogoPersonalizado("🔔 Solicitud Reciente", mensajeNotificacion, "Entendido", null, false, null);
+            }
+        });
+    }
+
+    private String formatearFechaLegible(String fechaSupabase) {
+        try {
+            String fechaLimpia = fechaSupabase.length() > 19 ? fechaSupabase.substring(0, 19) : fechaSupabase;
+            SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+            Date fecha = parser.parse(fechaLimpia);
+
+            SimpleDateFormat formatter = new SimpleDateFormat("dd 'de' MMMM 'de' yyyy, hh:mm a", new Locale("es", "ES"));
+            return formatter.format(fecha);
+        } catch (Exception e) {
+            return fechaSupabase;
+        }
+    }
+
+    private void mostrarDialogoPersonalizado(String titulo, String mensaje, String textoBotonAceptar, String textoBotonCancelar, boolean esDecision, Runnable accionAceptar) {
+        View vistaDialogo = getLayoutInflater().inflate(R.layout.dialogo_personalizado, null);
+
+        TextView tvTitulo = vistaDialogo.findViewById(R.id.tvTituloDialogo);
+        TextView tvMensaje = vistaDialogo.findViewById(R.id.tvMensajeDialogo);
+        Button btnCancelar = vistaDialogo.findViewById(R.id.btnCancelarDialogo);
+        Button btnAceptar = vistaDialogo.findViewById(R.id.btnAceptarDialogo);
+
+        tvTitulo.setText(titulo);
+        tvMensaje.setText(mensaje);
+        btnAceptar.setText(textoBotonAceptar);
+
+        if (esDecision && textoBotonCancelar != null) {
+            btnCancelar.setVisibility(View.VISIBLE);
+            btnCancelar.setText(textoBotonCancelar);
+        } else {
+            btnCancelar.setVisibility(View.GONE);
+        }
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(vistaDialogo)
+                .create();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        btnCancelar.setOnClickListener(v -> dialog.dismiss());
+
+        btnAceptar.setOnClickListener(v -> {
+            dialog.dismiss();
+            if (accionAceptar != null) {
+                accionAceptar.run();
+            }
+        });
+
+        dialog.show();
+    }
+
+    private void mostrarDialogoCerrarSesionPersonalizado() {
+        mostrarDialogoPersonalizado(
+                "Cerrar Sesión",
+                "¿Estás segura de que deseas cerrar sesión?",
+                "Sí, salir",
+                "Cancelar",
+                true,
+                this::cerrarSesionYIrALogin
+        );
+    }
+
+    private void cerrarSesionYIrALogin() {
+        Intent intent = new Intent(AgendarAsesoria.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private Retrofit obtenerRetrofitConAuth() {
@@ -183,16 +346,12 @@ public class AgendarAsesoria extends AppCompatActivity {
                         List<String> listaGrupos = new ArrayList<>();
                         listaGrupos.add("Selecciona un grupo...");
 
-                        // Extraer los nombres de los grupos sin repetir
                         for (Alumno a : listaAlumnosGlobal) {
                             if (a.getGrupo() != null) {
                                 String nombreGrupo = a.getGrupo().getNombre();
-                                Log.d("GRUPO_DEBUG", "Grupo detectado: " + nombreGrupo);
                                 if (nombreGrupo != null && !listaGrupos.contains(nombreGrupo)) {
                                     listaGrupos.add(nombreGrupo);
                                 }
-                            } else {
-                                Log.d("GRUPO_DEBUG", "Un alumno tiene el objeto grupo en nulo");
                             }
                         }
 
@@ -203,29 +362,37 @@ public class AgendarAsesoria extends AppCompatActivity {
                         );
                         adapterGrupos.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                         spinnerGrupos.setAdapter(adapterGrupos);
-
-                    } else {
-                        String errorBody = "";
-                        try {
-                            if (response.errorBody() != null) {
-                                errorBody = response.errorBody().string();
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-
-                        Log.e("SUPABASE_ERROR", "Error " + response.code() + " - Detalle: " + errorBody);
-                        Toast.makeText(AgendarAsesoria.this, "Error al cargar datos: " + response.code(), Toast.LENGTH_SHORT).show();
                     }
                 });
             }
 
             @Override
             public void onFailure(Call<List<Alumno>> call, Throwable t) {
-                runOnUiThread(() -> {
-                    Log.e("SUPABASE_FALLO", "Fallo de red: " + t.getMessage());
-                    Toast.makeText(AgendarAsesoria.this, "Fallo de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+                runOnUiThread(() -> Toast.makeText(AgendarAsesoria.this, "Fallo de red: " + t.getMessage(), Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
+
+    private void cargarSolicitudesDocenteDesdeSupabase() {
+        String correoDocenteActual = getIntent().getStringExtra("USUARIO_EMAIL");
+        if (correoDocenteActual == null || correoDocenteActual.isEmpty()) {
+            correoDocenteActual = "docente@utnay.edu.mx";
+        }
+
+        SupabaseApiService apiService = obtenerRetrofitConAuth().create(SupabaseApiService.class);
+
+        // Consulta filtrada directamente por el correo del docente en la tabla de solicitudes
+        apiService.getSolicitudesPorDocente("eq." + correoDocenteActual).enqueue(new Callback<List<SolicitudAsesoriaRequest>>() {
+            @Override
+            public void onResponse(Call<List<SolicitudAsesoriaRequest>> call, Response<List<SolicitudAsesoriaRequest>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    listaSolicitudesBD = response.body();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<SolicitudAsesoriaRequest>> call, Throwable t) {
+                Log.e("SUPABASE_SOLICITUDES", "Error al cargar solicitudes del docente: " + t.getMessage());
             }
         });
     }
@@ -255,8 +422,8 @@ public class AgendarAsesoria extends AppCompatActivity {
         spinnerAlumnos.setAdapter(adapterAlumnos);
     }
 
-    private void guardarSesionEnSupabase(String alumnoId, String tema, String objetivo, String fecha, String hora) {
-        AsesoriaRequest nuevaAsesoria = new AsesoriaRequest(alumnoId, tema, objetivo, fecha + " " + hora);
+    private void guardarSesionEnSupabase(int alumnoId, String tema, String objetivo, String fecha, String hora, String modalidad, long docenteId, String correoAlumno, String correoDocente) {
+        AsesoriaRequest nuevaAsesoria = new AsesoriaRequest(alumnoId, tema, objetivo, fecha + " " + hora, modalidad, docenteId, correoAlumno, correoDocente);
 
         SupabaseApiService apiService = obtenerRetrofitConAuth().create(SupabaseApiService.class);
 
@@ -266,31 +433,18 @@ public class AgendarAsesoria extends AppCompatActivity {
                 runOnUiThread(() -> {
                     if (response.isSuccessful()) {
                         Toast.makeText(AgendarAsesoria.this, "¡Asesoría agendada con éxito!", Toast.LENGTH_LONG).show();
-
-                        // Lanza la notificación local tras registrarse con éxito en la tabla sesiones_de_asesoria
                         lanzarNotificacionAsesoria(tema, fecha + " a las " + hora);
-
                         finish();
                     } else {
-                        String errorBody = "";
-                        try {
-                            if (response.errorBody() != null) {
-                                errorBody = response.errorBody().string();
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        Log.e("SUPABASE_ERROR", "Error al guardar asesoría: " + response.code() + " - " + errorBody);
-                        Toast.makeText(AgendarAsesoria.this, "Error al guardar la asesoría: " + response.code(), Toast.LENGTH_SHORT).show();
+                        Log.e("SUPABASE_ERROR", "Error al guardar: " + response.code());
+                        Toast.makeText(AgendarAsesoria.this, "Error al guardar: " + response.code(), Toast.LENGTH_SHORT).show();
                     }
                 });
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
-                runOnUiThread(() -> {
-                    Toast.makeText(AgendarAsesoria.this, "Fallo de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+                runOnUiThread(() -> Toast.makeText(AgendarAsesoria.this, "Fallo de red: " + t.getMessage(), Toast.LENGTH_SHORT).show());
             }
         });
     }

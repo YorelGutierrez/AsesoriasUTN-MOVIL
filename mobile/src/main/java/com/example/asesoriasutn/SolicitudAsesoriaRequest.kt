@@ -3,8 +3,14 @@ package com.example.asesoriasutn
 import com.google.gson.annotations.SerializedName
 
 data class SolicitudAsesoriaRequest(
+    @SerializedName("correo_alumno")
+    val correoAlumno: String,
+
+    @SerializedName("correo_docente")
+    val correoDocente: String,
+
     @SerializedName("docente_id")
-    val docenteId: Int,
+    val docenteId: Long, // Ajustado a Long para coincidir con int8 de Supabase
 
     @SerializedName("que_aprender")
     val queAprender: String,

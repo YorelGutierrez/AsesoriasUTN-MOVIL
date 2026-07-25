@@ -1,6 +1,6 @@
-# Tareas: Implementación de Guardado de Solicitudes en Supabase
+# Tareas: Diagnóstico y Resolución de Error 400
 
-- [ ] `[ ]` Crear el modelo de datos `SolicitudAsesoriaRequest.kt`
-- [ ] `[ ]` Actualizar `SupabaseApiService.java` con el nuevo endpoint
-- [ ] `[ ]` Implementar la lógica de envío en `SolicitudDocente.kt`
-- [ ] `[ ]` Verificar la compilación y el flujo de datos
+- [x] Mejorar Logging en `SolicitudDocente.kt`
+- [x] Mejorar Logging en `AgendarAsesoria.java`
+- [ ] `[ ]` Verificar nombres de columnas en modelos de datos (Pendiente del reporte del usuario)
+- [ ] `[ ]` Validar formato de fecha y hora (Pendiente del reporte del usuario)

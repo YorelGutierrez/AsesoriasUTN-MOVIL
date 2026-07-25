@@ -9,6 +9,9 @@ public class UserData {
     @SerializedName("apellido_paterno")
     private String apellidoPaterno;
 
+    @SerializedName("email")
+    private String email;
+
     public UserData() {}
 
     public String getNombres() {
@@ -17,5 +20,9 @@ public class UserData {
 
     public String getApellidoPaterno() {
         return apellidoPaterno;
+    }
+
+    public String getEmail() {
+        return email;
     }
 }
