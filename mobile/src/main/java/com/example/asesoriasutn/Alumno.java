@@ -26,6 +26,10 @@ public class Alumno {
         return grupo;
     }
 
+    public String getCorreo() {
+        return (user != null) ? user.getEmail() : null;
+    }
+
     public String getNombreCompleto() {
         if (user != null) {
             String nombres = user.getNombres() != null ? user.getNombres() : "";

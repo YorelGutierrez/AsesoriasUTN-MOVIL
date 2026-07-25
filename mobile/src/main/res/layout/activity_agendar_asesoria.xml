@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F4F6F8"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    tools:context=".AgendarAsesoria">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -12,7 +14,7 @@
         android:orientation="vertical"
         android:paddingBottom="40dp">
 
-        <!-- Barra Superior con Más Padding y Flecha de Regreso -->
+        <!-- Barra Superior Unificada -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="68dp"
@@ -26,7 +28,7 @@
             android:orientation="horizontal"
             android:paddingHorizontal="20dp">
 
-            <!-- Flecha de Regreso -->
+            <!-- Flecha de Regresar -->
             <ImageView
                 android:id="@+id/btnRegresar"
                 android:layout_width="28dp"
@@ -36,17 +38,6 @@
                 android:focusable="true"
                 android:contentDescription="Regresar"
                 android:src="@android:drawable/ic_menu_revert"
-                app:tint="#FFFFFF" />
-
-            <!-- Menú Hamburguesa -->
-            <ImageView
-                android:id="@+id/btnMenuLateral"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:contentDescription="Menú"
-                android:src="@android:drawable/ic_menu_sort_by_size"
                 app:tint="#FFFFFF" />
 
             <!-- Espaciador flexible -->
@@ -88,14 +79,14 @@
 
                 <!-- Avatar Usuario -->
                 <TextView
-                    android:id="@+id/btnAvatarUsuario"
+                    android:id="@+id/tvAvatarUsuario"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
                     android:background="@drawable/avatar_circular"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center"
-                    android:text="JM"
+                    android:text="--"
                     android:textColor="#FFFFFF"
                     android:textSize="13sp"
                     android:textStyle="bold" />
@@ -146,7 +137,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Instrucciones: 1. Selecciona la persona con quien deseas la asesoría. 2. Elige una fecha y hora disponible. 3. Completa los detalles y envía la solicitud."
+                    android:text="Instrucciones:\n1. Selecciona el grupo y alumno.\n2. Completa los detalles y la modalidad.\n3. Elige la fecha y hora para agendar."
                     android:textColor="#065F46"
                     android:textSize="13sp" />
             </LinearLayout>
@@ -172,7 +163,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="16dp">
 
                         <View
                             android:layout_width="4dp"
@@ -192,33 +184,32 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
                         android:text="Seleccionar Grupo *"
                         android:textColor="#0F172A"
                         android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp"/>
 
                     <Spinner
                         android:id="@+id/spinnerGrupos"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@android:drawable/btn_dropdown" />
+                        android:background="@android:drawable/btn_dropdown"
+                        android:layout_marginBottom="16dp"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
                         android:text="Seleccionar Alumno *"
                         android:textColor="#0F172A"
                         android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp"/>
 
                     <Spinner
                         android:id="@+id/spinnerAlumnos"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"
-                        android:layout_marginTop="8dp"
                         android:background="@android:drawable/btn_dropdown" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -244,7 +235,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="16dp">
 
                         <View
                             android:layout_width="4dp"
@@ -261,79 +253,61 @@
                             android:textStyle="bold" />
                     </LinearLayout>
 
-                    <!-- Consejo -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:background="#ECFDF5"
-                        android:padding="12dp">
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Consejo: Prepara las preguntas que quieras resolver durante la asesoría"
-                            android:textColor="#065F46"
-                            android:textSize="13sp" />
-                    </LinearLayout>
-
                     <!-- Tema de la asesoría -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
                         android:text="Tema de la asesoría *"
                         android:textColor="#0F172A"
                         android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp"/>
 
                     <EditText
                         android:id="@+id/etTema"
                         android:layout_width="match_parent"
-                        android:layout_height="100dp"
-                        android:layout_marginTop="8dp"
+                        android:layout_height="48dp"
                         android:background="@android:drawable/editbox_background_normal"
-                        android:gravity="top"
-                        android:hint="Ej: Derivadas, Álgebra, Programación..."
-                        android:padding="12dp"
-                        android:textSize="14sp" />
-
-                    <!-- Objetivo específico -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:text="Objetivo específico de la asesoría"
-                        android:textColor="#0F172A"
+                        android:gravity="center_vertical"
+                        android:hint="Ej: Base de datos, Programación..."
+                        android:paddingHorizontal="12dp"
                         android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:inputType="textPersonName"
+                        android:layout_marginBottom="16dp"/>
 
-                    <EditText
-                        android:id="@+id/etObjetivo"
+                    <!-- Objetivo específico usando TextInputLayout para mantener el estándar visual -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
-                        android:layout_height="100dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@android:drawable/editbox_background_normal"
-                        android:gravity="top"
-                        android:hint="¿Qué esperas lograr al final de esta asesoría?"
-                        android:padding="12dp"
-                        android:textSize="14sp" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        app:boxStrokeColor="#0D9488"
+                        android:hint="Objetivo de la asesoría *">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etObjetivo"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textMultiLine"
+                            android:lines="3" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Modalidad -->
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
                         android:text="Modalidad *"
                         android:textColor="#0F172A"
                         android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp"/>
 
                     <Spinner
+                        android:id="@+id/spinnerModalidad"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@android:drawable/btn_dropdown" />
+                        android:background="@android:drawable/btn_dropdown"
+                        android:entries="@array/modalidad" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -359,7 +333,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="16dp">
 
                         <View
                             android:layout_width="4dp"
@@ -381,39 +356,34 @@
                         android:id="@+id/calendarView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:background="#FFFFFF" />
+                        android:background="#FFFFFF"
+                        android:layout_marginBottom="16dp" />
 
-                    <!-- Selector de Hora -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
-                        android:text="Hora"
-                        android:textColor="#0F172A"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                    <EditText
-                        android:id="@+id/etHora"
+                    <!-- Selector de Hora con TextInputLayout -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@android:drawable/editbox_background_normal"
-                        android:clickable="true"
-                        android:focusable="false"
-                        android:hint="--:-- ----"
-                        android:paddingHorizontal="12dp"
-                        android:textSize="14sp" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="24dp"
+                        app:boxStrokeColor="#0D9488"
+                        android:hint="Hora de la Sesión *">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etHora"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:focusable="false"
+                            android:clickable="true"
+                            android:inputType="none" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Botón Agendar Sesión -->
                     <Button
                         android:id="@+id/btnAgendarSesion"
                         android:layout_width="match_parent"
                         android:layout_height="54dp"
-                        android:layout_marginTop="24dp"
                         android:backgroundTint="#0D9488"
-                        android:text="📅 Agendar Sesión"
+                        android:text="Agendar Sesión"
                         android:textColor="#FFFFFF"
                         android:textSize="16sp"
                         android:textStyle="bold"

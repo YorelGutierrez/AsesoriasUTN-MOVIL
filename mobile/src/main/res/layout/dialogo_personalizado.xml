@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@android:color/white">
+
+    <!-- Título -->
+    <TextView
+        android:id="@+id/tvTituloDialogo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Título"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Mensaje o Contenido -->
+    <TextView
+        android:id="@+id/tvMensajeDialogo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Mensaje descriptivo..."
+        android:textSize="14sp"
+        android:textColor="@android:color/darker_gray"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Botones en Fila -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <!-- Botón Cancelar con fondo redondeado -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnCancelarDialogo"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="Cancelar"
+            android:background="@drawable/bg_boton_redondeado"
+            android:textColor="@android:color/white"
+            android:textAllCaps="false"
+            android:layout_marginEnd="12dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:stateListAnimator="@null"/>
+
+        <!-- Botón Aceptar / Sí con fondo redondeado -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnAceptarDialogo"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="Sí, aceptar"
+            android:background="@drawable/bg_boton_redondeado"
+            android:textColor="@android:color/white"
+            android:textAllCaps="false"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:stateListAnimator="@null"/>
+    </LinearLayout>
+</LinearLayout>

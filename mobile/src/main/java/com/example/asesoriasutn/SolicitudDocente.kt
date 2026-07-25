@@ -1,10 +1,14 @@
 package com.example.asesoriasutn
 
 import android.app.TimePickerDialog
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatButton
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -14,11 +18,15 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 class SolicitudDocente : AppCompatActivity() {
+
+    // Vistas de la barra superior
+    private lateinit var btnRegresar: ImageView
+    private lateinit var btnIconoCalendario: ImageView
+    private lateinit var btnIconoNotificaciones: ImageView
+    private lateinit var btnAvatarUsuario: TextView
 
     private lateinit var spinnerDocentes: Spinner
     private lateinit var spModalidad: Spinner
@@ -36,12 +44,19 @@ class SolicitudDocente : AppCompatActivity() {
 
     private var fechaSeleccionada = ""
     private var listaDocentesGlobal: List<Docente> = listOf()
+    private var listaSolicitudesBD: List<SolicitudAsesoriaRequest> = listOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.solicitar_asesoria)
 
-        // Vincular controles
+        // Vincular controles de la barra superior
+        btnRegresar = findViewById(R.id.btnRegresar)
+        btnIconoCalendario = findViewById(R.id.btnIconoCalendario)
+        btnIconoNotificaciones = findViewById(R.id.btnIconoNotificaciones)
+        btnAvatarUsuario = findViewById(R.id.btnAvatarUsuario)
+
+        // Vincular controles del formulario
         spinnerDocentes = findViewById(R.id.spinnerDocentes)
         spModalidad = findViewById(R.id.spModalidad)
 
@@ -56,6 +71,9 @@ class SolicitudDocente : AppCompatActivity() {
         calendarView = findViewById(R.id.calendarView)
         btnEnviarSolicitud = findViewById(R.id.btnEnviarSolicitud)
 
+        // Configurar barra superior, sesión dinámica y eventos
+        configurarBarraSuperiorYDinamismo()
+
         // Spinner Modalidad
         val adapterModalidad = ArrayAdapter.createFromResource(
             this,
@@ -65,8 +83,9 @@ class SolicitudDocente : AppCompatActivity() {
         adapterModalidad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spModalidad.adapter = adapterModalidad
 
-        // Cargar docentes reales desde Supabase
+        // Cargar datos reales desde Supabase
         cargarDocentesDesdeSupabase()
+        cargarSolicitudesDelAlumnoDesdeSupabase()
 
         // Configurar calendario
         calendarView.firstDayOfWeek = Calendar.MONDAY
@@ -132,13 +151,17 @@ class SolicitudDocente : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Obtener el ID del docente seleccionado de la lista filtrada
             val indiceReal = spinnerDocentes.selectedItemPosition - 1
             if (indiceReal < listaDocentesGlobal.size) {
-                val idDocenteSeleccionado = listaDocentesGlobal[indiceReal].id
+                val docenteSeleccionado = listaDocentesGlobal[indiceReal]
+                val idDocenteSeleccionado = docenteSeleccionado.id.toLong()
 
-                // Mapeo corregido acorde a la tabla solicitudes_asesoria en Supabase
+                val correoDocenteDestino = docenteSeleccionado.correo ?: "docente@utnay.edu.mx"
+                val correoAlumnoActual = intent.getStringExtra("USUARIO_EMAIL") ?: "desconocido@utnay.edu.mx"
+
                 val nuevaSolicitud = SolicitudAsesoriaRequest(
+                    correoAlumno = correoAlumnoActual,
+                    correoDocente = correoDocenteDestino,
                     docenteId = idDocenteSeleccionado,
                     queAprender = aprender,
                     conocimientoPrevio = tieneConocimiento,
@@ -156,44 +179,138 @@ class SolicitudDocente : AppCompatActivity() {
         }
     }
 
-    private fun guardarSolicitudEnSupabase(solicitud: SolicitudAsesoriaRequest) {
-        val apiService = obtenerRetrofitConAuth().create(SupabaseApiService::class.java)
+    private fun configurarBarraSuperiorYDinamismo() {
+        val usuarioSesion = intent.getStringExtra("MATRICULA_O_NOMBRE") ?: "Vanessa"
+        val iniciales = if (usuarioSesion.length >= 2) usuarioSesion.substring(0, 2).uppercase() else "VM"
+        btnAvatarUsuario.text = iniciales
 
-        apiService.registrarSolicitud(solicitud).enqueue(object : Callback<Void> {
-            override fun onResponse(call: Call<Void>, response: Response<Void>) {
-                runOnUiThread {
-                    if (response.isSuccessful) {
-                        Toast.makeText(this@SolicitudDocente, "¡Solicitud enviada con éxito!", Toast.LENGTH_LONG).show()
-                        finish()
-                    } else {
-                        val errorBody = response.errorBody()?.string() ?: ""
-                        Log.e("SUPABASE_ERROR", "Error al guardar solicitud: ${response.code()} - $errorBody")
-                        Toast.makeText(this@SolicitudDocente, "Error al enviar: ${response.code()}", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
+        btnAvatarUsuario.setOnClickListener {
+            mostrarDialogoCerrarSesionPersonalizado()
+        }
 
-            override fun onFailure(call: Call<Void>, t: Throwable) {
-                runOnUiThread {
-                    Log.e("SUPABASE_FALLO", "Fallo de red: ${t.message}")
-                    Toast.makeText(this@SolicitudDocente, "Fallo de red: ${t.message}", Toast.LENGTH_SHORT).show()
+        btnRegresar.setOnClickListener {
+            mostrarDialogoCerrarSesionPersonalizado()
+        }
+
+        // Botón Calendario con diseño personalizado y filtrado privado de solicitudes enviadas por el alumno
+        btnIconoCalendario.setOnClickListener {
+            if (listaSolicitudesBD.isEmpty()) {
+                Toast.makeText(this, "No has enviado solicitudes de asesoría.", Toast.LENGTH_SHORT).show()
+            } else {
+                val sb = StringBuilder()
+                for (solicitud in listaSolicitudesBD) {
+                    val fechaFormateada = formatearFechaLegible(solicitud.fechaHora)
+                    sb.append("• Docente Destino: ").append(solicitud.correoDocente)
+                        .append("\n• Qué aprender: ").append(solicitud.queAprender)
+                        .append("\n• Objetivo: ").append(solicitud.objetivo)
+                        .append("\n• Modalidad: ").append(solicitud.modalidad)
+                        .append("\n• Fecha y Hora:\n  ").append(fechaFormateada)
+                        .append("\n\n----------------------------------\n\n")
                 }
+                mostrarDialogoPersonalizado("📅 Mis Solicitudes Enviadas", sb.toString().trim(), "Cerrar", null, false, null)
             }
-        })
+        }
+
+        // Botón Notificaciones con diseño personalizado
+        btnIconoNotificaciones.setOnClickListener {
+            if (listaSolicitudesBD.isEmpty()) {
+                Toast.makeText(this, "No tienes notificaciones nuevas.", Toast.LENGTH_SHORT).show()
+            } else {
+                val ultimaSolicitud = listaSolicitudesBD.last()
+                val fechaFormateada = formatearFechaLegible(ultimaSolicitud.fechaHora)
+                val mensajeNotificacion = "• Destino: ${ultimaSolicitud.correoDocente}\n• Objetivo: ${ultimaSolicitud.objetivo}\n• Programada para:\n  $fechaFormateada"
+
+                mostrarDialogoPersonalizado("🔔 Solicitud Reciente", mensajeNotificacion, "Entendido", null, false, null)
+            }
+        }
+    }
+
+    // Función auxiliar para separar y formatear la fecha y hora limpiamente
+    private fun formatearFechaLegible(fechaSupabase: String): String {
+        return try {
+            val fechaLimpia = if (fechaSupabase.length > 19) fechaSupabase.substring(0, 19) else fechaSupabase
+            val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+            val fecha = parser.parse(fechaLimpia)
+            val formatter = SimpleDateFormat("dd 'de' MMMM 'de' yyyy, hh:mm a", Locale("es", "ES"))
+            formatter.format(fecha!!)
+        } catch (e: Exception) {
+            fechaSupabase
+        }
+    }
+
+    // Método centralizado para mostrar el diálogo personalizado con botones redondos
+    private fun mostrarDialogoPersonalizado(
+        titulo: String,
+        mensaje: String,
+        textoBotonAceptar: String,
+        textoBotonCancelar: String?,
+        esDecision: Boolean,
+        accionAceptar: (() -> Unit)?
+    ) {
+        val vistaDialogo = layoutInflater.inflate(R.layout.dialogo_personalizado, null)
+
+        val tvTitulo = vistaDialogo.findViewById<TextView>(R.id.tvTituloDialogo)
+        val tvMensaje = vistaDialogo.findViewById<TextView>(R.id.tvMensajeDialogo)
+        val btnCancelar = vistaDialogo.findViewById<AppCompatButton>(R.id.btnCancelarDialogo)
+        val btnAceptar = vistaDialogo.findViewById<AppCompatButton>(R.id.btnAceptarDialogo)
+
+        tvTitulo.text = titulo
+        tvMensaje.text = mensaje
+        btnAceptar.text = textoBotonAceptar
+
+        if (esDecision && textoBotonCancelar != null) {
+            btnCancelar.visibility = View.VISIBLE
+            btnCancelar.text = textoBotonCancelar
+        } else {
+            btnCancelar.visibility = View.GONE
+        }
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(vistaDialogo)
+            .create()
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        btnCancelar.setOnClickListener { dialog.dismiss() }
+
+        btnAceptar.setOnClickListener {
+            dialog.dismiss()
+            accionAceptar?.invoke()
+        }
+
+        dialog.show()
+    }
+
+    private fun mostrarDialogoCerrarSesionPersonalizado() {
+        mostrarDialogoPersonalizado(
+            "Cerrar Sesión",
+            "¿Estás segura de que deseas cerrar sesión?",
+            "Sí, salir",
+            "Cancelar",
+            true
+        ) {
+            cerrarSesionYIrALogin()
+        }
+    }
+
+    private fun cerrarSesionYIrALogin() {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 
     private fun obtenerRetrofitConAuth(): Retrofit {
         val apiKey = "sb_publishable_8hbEGvtOKw3SvnVz7apPlg_KWVdL5xe"
-
-        val client = OkHttpClient.Builder().addInterceptor(Interceptor { chain ->
-            val original: Request = chain.request()
-            val request: Request = original.newBuilder()
+        val client = OkHttpClient.Builder().addInterceptor { chain ->
+            val original = chain.request()
+            val request = original.newBuilder()
                 .header("apikey", apiKey)
                 .header("Authorization", "Bearer $apiKey")
                 .method(original.method(), original.body())
                 .build()
             chain.proceed(request)
-        }).build()
+        }.build()
 
         return Retrofit.Builder()
             .baseUrl("https://jxeftmhxwjiolbxiklyc.supabase.co/")
@@ -202,20 +319,40 @@ class SolicitudDocente : AppCompatActivity() {
             .build()
     }
 
+    private fun guardarSolicitudEnSupabase(solicitud: SolicitudAsesoriaRequest) {
+        val apiService = obtenerRetrofitConAuth().create(SupabaseApiService::class.java)
+        apiService.registrarSolicitud(solicitud).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                runOnUiThread {
+                    if (response.isSuccessful) {
+                        Toast.makeText(this@SolicitudDocente, "¡Solicitud enviada con éxito!", Toast.LENGTH_LONG).show()
+                        finish()
+                    } else {
+                        val errorBody = response.errorBody()?.string() ?: "Sin detalle"
+                        Log.e("SUPABASE_DETALLE", "Error detalle: $errorBody")
+                        Toast.makeText(this@SolicitudDocente, "Error al enviar: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                runOnUiThread {
+                    Toast.makeText(this@SolicitudDocente, "Fallo de red: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
+    }
+
     private fun cargarDocentesDesdeSupabase() {
         val apiService = obtenerRetrofitConAuth().create(SupabaseApiService::class.java)
-
         apiService.getDocentes().enqueue(object : Callback<List<Docente>> {
             override fun onResponse(call: Call<List<Docente>>, response: Response<List<Docente>>) {
                 runOnUiThread {
                     if (response.isSuccessful && response.body() != null) {
                         listaDocentesGlobal = response.body()!!
-
                         val nombresDocentes = mutableListOf("Selecciona un docente...")
                         for (docente in listaDocentesGlobal) {
                             nombresDocentes.add(docente.getNombreCompleto())
                         }
-
                         val adapterDocentes = ArrayAdapter(
                             this@SolicitudDocente,
                             android.R.layout.simple_spinner_item,
@@ -223,17 +360,32 @@ class SolicitudDocente : AppCompatActivity() {
                         )
                         adapterDocentes.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                         spinnerDocentes.adapter = adapterDocentes
-
-                    } else {
-                        Toast.makeText(this@SolicitudDocente, "Error al cargar docentes: " + response.code(), Toast.LENGTH_SHORT).show()
                     }
                 }
             }
-
             override fun onFailure(call: Call<List<Docente>>, t: Throwable) {
                 runOnUiThread {
                     Toast.makeText(this@SolicitudDocente, "Fallo de red: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
+            }
+        })
+    }
+
+    private fun cargarSolicitudesDelAlumnoDesdeSupabase() {
+        val correoActual = intent.getStringExtra("USUARIO_EMAIL") ?: ""
+        val apiService = obtenerRetrofitConAuth().create(SupabaseApiService::class.java)
+
+        // Consultamos la tabla de solicitudes filtrando específicamente por el correo del alumno actual
+        apiService.getSolicitudesPorAlumno("eq.$correoActual").enqueue(object : Callback<List<SolicitudAsesoriaRequest>> {
+            override fun onResponse(call: Call<List<SolicitudAsesoriaRequest>>, response: Response<List<SolicitudAsesoriaRequest>>) {
+                runOnUiThread {
+                    if (response.isSuccessful && response.body() != null) {
+                        listaSolicitudesBD = response.body()!!
+                    }
+                }
+            }
+            override fun onFailure(call: Call<List<SolicitudAsesoriaRequest>>, t: Throwable) {
+                Log.e("SUPABASE_SOLICITUDES", "Error al cargar solicitudes del alumno: ${t.message}")
             }
         })
     }

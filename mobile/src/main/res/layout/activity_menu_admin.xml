@@ -8,12 +8,14 @@
     android:orientation="vertical"
     android:padding="24dp">
 
-    <!-- Encabezado con un icono visible del sistema -->
+    <!-- Encabezado con un contenedor circular estilizado -->
     <ImageView
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:layout_marginTop="36dp"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_marginTop="32dp"
         android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_circle"
+        android:padding="16dp"
         android:src="@android:drawable/ic_menu_manage"
         app:tint="#0D9488"
         android:contentDescription="Icono Admin" />
@@ -29,8 +31,8 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="36dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="32dp"
         android:text="Selecciona el módulo al que deseas acceder"
         android:textColor="#64748B"
         android:textSize="14sp" />
@@ -45,9 +47,10 @@
         android:focusable="true"
         app:cardBackgroundColor="#FFFFFF"
         app:cardCornerRadius="16dp"
-        app:cardElevation="4dp"
+        app:cardElevation="3dp"
         app:strokeColor="#E2E8F0"
-        app:strokeWidth="1dp">
+        app:strokeWidth="1dp"
+        android:foreground="?attr/selectableItemBackground">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -57,8 +60,10 @@
             android:padding="20dp">
 
             <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_circle"
+                android:padding="10dp"
                 android:src="@android:drawable/ic_menu_today"
                 app:tint="#0D9488" />
 
@@ -80,7 +85,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="3dp"
                     android:text="Gestiona horarios y sesiones programadas"
                     android:textColor="#64748B"
                     android:textSize="12sp" />
@@ -98,9 +103,10 @@
         android:focusable="true"
         app:cardBackgroundColor="#FFFFFF"
         app:cardCornerRadius="16dp"
-        app:cardElevation="4dp"
+        app:cardElevation="3dp"
         app:strokeColor="#E2E8F0"
-        app:strokeWidth="1dp">
+        app:strokeWidth="1dp"
+        android:foreground="?attr/selectableItemBackground">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -110,8 +116,10 @@
             android:padding="20dp">
 
             <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_circle"
+                android:padding="10dp"
                 android:src="@android:drawable/ic_menu_agenda"
                 app:tint="#0D9488" />
 
@@ -133,7 +141,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="3dp"
                     android:text="Revisa y administra las peticiones de los alumnos"
                     android:textColor="#64748B"
                     android:textSize="12sp" />

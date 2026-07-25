@@ -68,6 +68,8 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "¡Bienvenido Alumno!", Toast.LENGTH_SHORT).show();
 
             Intent intent = new Intent(MainActivity.this, SolicitudDocente.class);
+            intent.putExtra("USUARIO_EMAIL", correoMinuscula);
+            intent.putExtra("MATRICULA_O_NOMBRE", usuario);
             startActivity(intent);
 
         } else {
@@ -75,6 +77,8 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "¡Bienvenido Docente!", Toast.LENGTH_SHORT).show();
 
             Intent intent = new Intent(MainActivity.this, AgendarAsesoria.class);
+            intent.putExtra("USUARIO_EMAIL", correoMinuscula);
+            intent.putExtra("USUARIO_NOMBRE", usuario);
             startActivity(intent);
         }
     }
