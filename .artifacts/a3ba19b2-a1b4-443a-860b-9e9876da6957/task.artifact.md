@@ -1,6 +1,6 @@
-# Tareas: Diagnóstico y Resolución de Error 400
+# Tareas: Consultar Solicitudes en Wear OS
 
-- [x] Mejorar Logging en `SolicitudDocente.kt`
-- [x] Mejorar Logging en `AgendarAsesoria.java`
-- [ ] `[ ]` Verificar nombres de columnas en modelos de datos (Pendiente del reporte del usuario)
-- [ ] `[ ]` Validar formato de fecha y hora (Pendiente del reporte del usuario)
+- [x] Añadir `getSolicitudesPorAlumno` en `SupabaseWearApiService.kt`
+- [x] Implementar lógica de carga en `MainActivity.kt`
+- [x] Mostrar lista de solicitudes en la UI del reloj
+- [x] Verificar compilación y funcionamiento

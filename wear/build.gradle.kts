@@ -17,7 +17,6 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
     }
 
     buildTypes {
@@ -51,6 +50,11 @@ dependencies {
     implementation(libs.androidx.wear.tooling.preview)
     implementation(libs.compose.ui.tooling)
     implementation(libs.play.services.wearable)
+
+    // --- DEPENDENCIAS DE RETROFIT Y OKHTTP PARA SUPABASE EN EL RELOJ ---
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
