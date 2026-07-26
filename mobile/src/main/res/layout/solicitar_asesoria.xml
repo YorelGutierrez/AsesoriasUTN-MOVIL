@@ -263,29 +263,44 @@
                         android:textSize="14sp"
                         android:layout_marginBottom="16dp"/>
 
-                    <CheckBox
-                        android:id="@+id/chkConocimiento"
+                    <!-- Contenedor Estilizado Sutil para los Checkboxes -->
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="¿Ya tienes conocimiento previo sobre el tema?"
-                        android:textColor="#0F172A"
-                        android:layout_marginBottom="8dp"/>
+                        android:orientation="vertical"
+                        android:background="#F8FAFC"
+                        android:padding="16dp"
+                        android:layout_marginBottom="16dp">
 
-                    <CheckBox
-                        android:id="@+id/chkMaterial"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="¿Necesitas material de apoyo o ejercicios?"
-                        android:textColor="#0F172A"
-                        android:layout_marginBottom="8dp"/>
+                        <CheckBox
+                            android:id="@+id/chkConocimiento"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="¿Ya tienes conocimiento previo sobre el tema?"
+                            android:textSize="13sp"
+                            android:textColor="#0F172A"
+                            android:buttonTint="#0D9488"
+                            android:layout_marginBottom="8dp"/>
 
-                    <CheckBox
-                        android:id="@+id/chkEjercicios"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="¿Tienes ejercicios específicos que quieres resolver?"
-                        android:textColor="#0F172A"
-                        android:layout_marginBottom="16dp"/>
+                        <CheckBox
+                            android:id="@+id/chkMaterial"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="¿Necesitas material de apoyo o ejercicios?"
+                            android:textSize="13sp"
+                            android:textColor="#0F172A"
+                            android:buttonTint="#0D9488"
+                            android:layout_marginBottom="8dp"/>
+
+                        <CheckBox
+                            android:id="@+id/chkEjercicios"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="¿Tienes ejercicios específicos que quieres resolver?"
+                            android:textSize="13sp"
+                            android:textColor="#0F172A"
+                            android:buttonTint="#0D9488"/>
+                    </LinearLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
