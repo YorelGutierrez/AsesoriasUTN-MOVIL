@@ -1,25 +1,21 @@
-# Restauración de Envío de Correos a Supabase
+# Implementación de Consulta de Solicitudes en Wear OS
 
-He restaurado la lógica para enviar los correos electrónicos de los alumnos y docentes a Supabase, ahora que las columnas correspondientes han sido agregadas a la base de datos. También he eliminado los diálogos de diagnóstico que usamos para identificar el error 400.
+He habilitado la funcionalidad para que el botón "Mis Solicitudes" en el reloj realmente consulte la base de datos de Supabase y muestre tus peticiones recientes.
 
 ## Cambios realizados
 
-### 1. Modelo de Datos (Java)
-- **[AsesoriaRequest.java](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/mobile/src/main/java/com/example/asesoriasutn/AsesoriaRequest.java)**:
-    - Se eliminó el modificador `transient` de los campos `correoAlumno` y `correoDocente`.
-    - Se restauraron las anotaciones `@SerializedName("correo_alumno")` y `@SerializedName("correo_docente")`.
-    - Se actualizó el constructor para incluir estos campos de forma obligatoria.
+### 1. Capa de Red
+- **[SupabaseWearApiService.kt](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/wear/src/main/java/com/example/asesoriasutn/presentation/network/SupabaseWearApiService.kt)**: Se añadió el método `getSolicitudesPorAlumno` para permitir la lectura de datos desde el reloj.
 
-### 2. Limpieza de Diagnóstico (UI)
-- **[AgendarAsesoria.java](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/mobile/src/main/java/com/example/asesoriasutn/AgendarAsesoria.java)**:
-    - Se eliminó el cuadro de diálogo de error "Supabase dice..." que mostraba detalles técnicos del Error 400.
-    - Se mantuvo la lógica de guardado que ahora envía los correos reales a las nuevas columnas de la tabla.
-- **[SolicitudDocente.kt](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/mobile/src/main/java/com/example/asesoriasutn/SolicitudDocente.kt)**:
-    - Se eliminó el cuadro de diálogo de diagnóstico técnico.
+### 2. Interfaz Dinámica en el Reloj
+- **[MainActivity.kt](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/wear/src/main/java/com/example/asesoriasutn/presentation/MainActivity.kt)**:
+    - Se implementó una lista reactiva que muestra las solicitudes debajo de los botones principales.
+    - Cada solicitud se presenta en una **Tarjeta (Card)** con el tema de la asesoría en negrita y la fecha/hora debajo.
+    - Se añadió un estado de carga para informar al usuario mientras se obtienen los datos.
 
 ## Verificación
-- **Build**: El proyecto compila correctamente (`BUILD SUCCESSFUL`).
-- **Datos**: Las solicitudes ahora deberían guardarse con toda la información (ID y Correo) en las tablas de Supabase sin marcar error 400.
+- **Build**: El módulo `wear` compila correctamente (`BUILD SUCCESSFUL`).
+- **Lógica**: Al presionar "Mis Solicitudes", el reloj ahora realiza una petición GET a Supabase filtrando por el correo del alumno.
 
 > [!TIP]
-> **Próximos pasos**: Puedes realizar una prueba de guardado tanto desde la vista de Alumno como desde la de Docente para confirmar que los datos aparecen correctamente en tu panel de Supabase.
+> **Limpieza de Pantalla**: He configurado el botón inferior ("Limpiar") para que también oculte la lista de solicitudes, permitiéndote regresar a la vista simplificada del reloj en cualquier momento.

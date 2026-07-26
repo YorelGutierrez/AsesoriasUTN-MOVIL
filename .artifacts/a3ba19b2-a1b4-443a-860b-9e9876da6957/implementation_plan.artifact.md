@@ -1,31 +1,31 @@
-# Plan de Resolución de Error 400 (Bad Request)
+# Plan de Implementación: Consultar Solicitudes en Wear OS
 
-El error 400 indica que la estructura del JSON enviado no coincide con lo que Supabase espera en la base de datos.
+Este plan detalla los pasos para que el botón "Mis Solicitudes" en el reloj realmente traiga y muestre la lista de asesorías pedidas desde Supabase.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> **Detalle del Error**: Para solucionar esto rápido, necesito que revises tu **Logcat** en Android Studio después de aplicar los cambios de "Logging" que haré a continuación. Busca la etiqueta `SUPABASE_DETALLE`.
+> **Navegación en el Reloj**: Dado que la pantalla es pequeña, mostraré las solicitudes como elementos adicionales en la lista principal debajo de los botones cuando se presione "Mis Solicitudes".
+>
+> **Identidad**: Al igual que en la función de "Pedir Asesoría", por ahora usaré el correo de prueba `vanessa@utnay.edu.mx` hasta que implementemos la sincronización real de sesión.
 
 ## Proposed Changes
 
 ### [Network Layer]
 
-#### [MODIFY] [SolicitudDocente.kt](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/mobile/src/main/java/com/example/asesoriasutn/SolicitudDocente.kt)
-- Mejorar el `onResponse` para extraer y mostrar el cuerpo del error (`response.errorBody().string()`).
-- Verificar que el formato de `fechaHora` sea compatible con Supabase (ISO 8601).
+#### [MODIFY] [SupabaseWearApiService.kt](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/wear/src/main/java/com/example/asesoriasutn/presentation/network/SupabaseWearApiService.kt)
+- Añadir el método `getSolicitudesPorAlumno` con el parámetro de filtrado por correo.
 
-#### [MODIFY] [AgendarAsesoria.java](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/mobile/src/main/java/com/example/asesoriasutn/AgendarAsesoria.java)
-- Añadir registro detallado del error de respuesta para identificar campos mal mapeados.
+### [UI Layer]
 
-### [Model Layer]
-
-#### [REVIEW] [SolicitudAsesoriaRequest.kt](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/mobile/src/main/java/com/example/asesoriasutn/SolicitudAsesoriaRequest.kt)
-- Comparar los nombres de `@SerializedName` con las columnas reales de tu tabla `solicitudes_asesoria`.
+#### [MODIFY] [MainActivity.kt](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/wear/src/main/java/com/example/asesoriasutn/presentation/MainActivity.kt)
+- Crear una nueva variable de estado `listaSolicitudes` para almacenar los datos recibidos.
+- Implementar la función `cargarSolicitudesDesdeSupabase()`.
+- Actualizar la interfaz para que, si la lista no está vacía, se muestren tarjetas con el tema y la fecha de cada asesoría.
 
 ## Verification Plan
 
 ### Manual Verification
-1. Aplicar cambios de logging.
-2. Intentar enviar una solicitud.
-3. Revisar el Logcat y copiar aquí el mensaje de error de Supabase.
+1. Abrir la app en el reloj.
+2. Presionar el botón "Mis Solicitudes".
+3. Verificar que el texto cambie a "Cargando..." y luego aparezcan los temas de las asesorías enviadas previamente debajo de los botones.
