@@ -19,13 +19,16 @@
             android:layout_width="match_parent"
             android:layout_height="68dp"
             android:layout_marginTop="24dp"
-            android:background="#059669"
+            android:background="@drawable/bg_toolbar"
+            android:elevation="10dp"
+            android:translationZ="10dp"
             android:gravity="center_vertical"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
             android:orientation="horizontal"
-            android:paddingHorizontal="20dp"
-            android:elevation="4dp">
+            android:paddingHorizontal="20dp">
 
-            <!-- Flecha de Regreso -->
+            <!-- Flecha de Regresar -->
             <ImageView
                 android:id="@+id/btnRegresar"
                 android:layout_width="28dp"
@@ -59,7 +62,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:contentDescription="Calendario"
-                    android:src="@android:drawable/ic_menu_my_calendar"
+                    android:src="@drawable/ic_calendar"
                     app:tint="#FFFFFF" />
 
                 <!-- Icono Notificaciones -->
@@ -71,19 +74,19 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:contentDescription="Notificaciones"
-                    android:src="@android:drawable/ic_menu_info_details"
+                    android:src="@drawable/ic_notification"
                     app:tint="#FFFFFF" />
 
                 <!-- Avatar Usuario -->
                 <TextView
-                    android:id="@+id/btnAvatarUsuario"
+                    android:id="@+id/tvAvatarUsuario"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
-                    android:background="@drawable/ic_launcher_background"
+                    android:background="@drawable/avatar_circular"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center"
-                    android:text="JM"
+                    android:text="--"
                     android:textColor="#FFFFFF"
                     android:textSize="13sp"
                     android:textStyle="bold" />
