@@ -1,6 +1,6 @@
-# Tareas: Consultar Solicitudes en Wear OS
+# Tareas: Resolución de Error de Ejecución
 
-- [x] Añadir `getSolicitudesPorAlumno` en `SupabaseWearApiService.kt`
-- [x] Implementar lógica de carga en `MainActivity.kt`
-- [x] Mostrar lista de solicitudes en la UI del reloj
-- [x] Verificar compilación y funcionamiento
+- [ ] `[ ]` Diferenciar el `namespace` y `applicationId` del módulo `wear`
+- [ ] `[ ]` Añadir ID faltante en el layout del perfil docente
+- [ ] `[ ]` Realizar limpieza y reconstrucción del proyecto
+- [ ] `[ ]` Verificar el flujo de inicio de la aplicación

@@ -11,7 +11,7 @@ import retrofit2.http.Query;
 public interface SupabaseApiService {
 
     @Headers("Accept: application/json")
-    @GET("rest/v1/alumnos?select=id,users!user_id(nombres,apellido_paterno),grupos!grupo_id(id,nombre)")
+    @GET("rest/v1/alumnos?select=*,users(*),grupos(*)")
     Call<List<Alumno>> getAlumnos();
 
     @Headers("Accept: application/json")
