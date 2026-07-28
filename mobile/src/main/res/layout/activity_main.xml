@@ -115,7 +115,7 @@
             android:layout_height="1dp"
             android:background="#DDDDDD"/>
 
-        <androidx.appcompat.widget.AppCompatButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogin"
             android:layout_width="match_parent"
             android:layout_height="55dp"
@@ -125,7 +125,7 @@
             android:textStyle="bold"
             android:textColor="#FFFFFF"
             android:background="@drawable/bg_boton_redondeado"
-            app:backgroundTint="@null"
+            app:backgroundTint="#0D9488"
             android:stateListAnimator="@null"
             tools:ignore="VisualLintButtonSize" />
 
