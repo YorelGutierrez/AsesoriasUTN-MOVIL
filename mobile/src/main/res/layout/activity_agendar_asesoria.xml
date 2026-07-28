@@ -14,7 +14,7 @@
         android:orientation="vertical"
         android:paddingBottom="40dp">
 
-        <!-- Barra Superior Unificada -->
+        <!-- Barra Superior Unificada (Limpia, sin líneas de menú) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="68dp"
@@ -33,14 +33,13 @@
                 android:id="@+id/btnRegresar"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:layout_marginEnd="16dp"
                 android:clickable="true"
                 android:focusable="true"
                 android:contentDescription="Regresar"
                 android:src="@android:drawable/ic_menu_revert"
                 app:tint="#FFFFFF" />
 
-            <!-- Espaciador flexible -->
+            <!-- Espaciador flexible para empujar el resto a la derecha -->
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
@@ -278,7 +277,7 @@
                         android:inputType="textPersonName"
                         android:layout_marginBottom="16dp"/>
 
-                    <!-- Objetivo específico usando TextInputLayout para mantener el estándar visual -->
+                    <!-- Objetivo específico usando TextInputLayout -->
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
@@ -363,7 +362,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
                         android:background="#FFFFFF"
-
                         android:focusedMonthDateColor="#000000"
                         android:unfocusedMonthDateColor="#9E9E9E"
                         android:selectedWeekBackgroundColor="#0D9488"

@@ -99,6 +99,7 @@
         android:id="@+id/cardSolicitud"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:clickable="true"
         android:focusable="true"
         app:cardBackgroundColor="#FFFFFF"
@@ -144,6 +145,62 @@
                     android:layout_marginTop="3dp"
                     android:text="Revisa y administra las peticiones de los alumnos"
                     android:textColor="#64748B"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Tarjeta 3: Cerrar Sesión -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardLogout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
+        app:cardBackgroundColor="#FFFFFF"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="3dp"
+        app:strokeColor="#E2E8F0"
+        app:strokeWidth="1dp"
+        android:foreground="?attr/selectableItemBackground">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="20dp">
+
+            <ImageView
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_circle"
+                android:padding="10dp"
+                android:src="@android:drawable/ic_lock_power_off"
+                app:tint="#DC2626" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cerrar Sesión"
+                    android:textColor="#DC2626"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="Salir de la cuenta de administrador"
+                    android:textColor="#94A3B8"
                     android:textSize="12sp" />
             </LinearLayout>
 

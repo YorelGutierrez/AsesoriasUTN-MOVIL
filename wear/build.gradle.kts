@@ -12,7 +12,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.asesoriasutn"
+        applicationId = "com.example.asesoriasutn.wear"
         minSdk = 33
         targetSdk = 36
         versionCode = 1

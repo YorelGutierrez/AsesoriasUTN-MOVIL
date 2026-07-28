@@ -10,6 +10,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface SupabaseWearApiService {
     @Headers(
@@ -37,6 +38,16 @@ interface SupabaseWearApiService {
     @GET("rest/v1/solicitudes_asesoria")
     fun getSolicitudesPorAlumno(
         @retrofit2.http.Query("correo_alumno") operadorIgual: String
+    ): Call<List<SolicitudAsesoriaWearRequest>>
+
+    @Headers(
+        "apikey: sb_publishable_8hbEGvtOKw3SvnVz7apPlg_KWVdL5xe",
+        "Authorization: Bearer sb_publishable_8hbEGvtOKw3SvnVz7apPlg_KWVdL5xe",
+        "Content-Type: application/json"
+    )
+    @GET("rest/v1/solicitudes_asesoria")
+    fun getSolicitudesPorDocente(
+        @retrofit2.http.Query("correo_docente") operadorIgual: String
     ): Call<List<SolicitudAsesoriaWearRequest>>
 }
 

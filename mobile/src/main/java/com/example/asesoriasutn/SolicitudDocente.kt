@@ -26,7 +26,7 @@ class SolicitudDocente : AppCompatActivity() {
     private lateinit var btnRegresar: ImageView
     private lateinit var btnIconoCalendario: ImageView
     private lateinit var btnIconoNotificaciones: ImageView
-    private lateinit var btnAvatarUsuario: TextView
+    private lateinit var tvAvatarUsuario: TextView
 
     private lateinit var spinnerDocentes: Spinner
     private lateinit var spModalidad: Spinner
@@ -55,7 +55,7 @@ class SolicitudDocente : AppCompatActivity() {
         btnRegresar = findViewById(R.id.btnRegresar)
         btnIconoCalendario = findViewById(R.id.btnIconoCalendario)
         btnIconoNotificaciones = findViewById(R.id.btnIconoNotificaciones)
-        btnAvatarUsuario = findViewById(R.id.btnAvatarUsuario)
+        tvAvatarUsuario = findViewById(R.id.tvAvatarUsuario)
 
         // Vincular controles del formulario
         spinnerDocentes = findViewById(R.id.spinnerDocentes)
@@ -182,16 +182,40 @@ class SolicitudDocente : AppCompatActivity() {
     }
 
     private fun configurarBarraSuperiorYDinamismo() {
-        val usuarioSesion = intent.getStringExtra("MATRICULA_O_NOMBRE") ?: "Vanessa"
-        val iniciales = if (usuarioSesion.length >= 2) usuarioSesion.substring(0, 2).uppercase() else "VM"
-        btnAvatarUsuario.text = iniciales
+        val usuarioSesion = intent.getStringExtra("MATRICULA_O_NOMBRE") ?: "Alumno"
+        
+        // Avatar Dinámico: Calcula iniciales automáticamente
+        var iniciales = "AL" // Default
+        if (usuarioSesion.length >= 2) {
+            val partes = usuarioSesion.trim().split(Regex("\\s+"))
+            iniciales = if (partes.size >= 2) {
+                (partes[0].substring(0, 1) + partes[1].substring(0, 1)).uppercase()
+            } else {
+                usuarioSesion.substring(0, 2.coerceAtMost(usuarioSesion.length)).uppercase()
+            }
+        }
+        tvAvatarUsuario.text = iniciales
 
-        btnAvatarUsuario.setOnClickListener {
+        tvAvatarUsuario.setOnClickListener {
             mostrarDialogoCerrarSesionPersonalizado()
         }
 
+        // El botón regresar redirige según el ROL del usuario
+        val isAdmin = intent.getBooleanExtra("IS_ADMIN", false)
+
         btnRegresar.setOnClickListener {
-            mostrarDialogoCerrarSesionPersonalizado()
+            if (isAdmin) {
+                // Si es Admin, regresa al panel de administración
+                val intent = Intent(this, MenuAdminActivity::class.java)
+                intent.putExtra("USUARIO_NOMBRE", usuarioSesion)
+                intent.putExtra("USUARIO_EMAIL", getIntent().getStringExtra("USUARIO_EMAIL"))
+                intent.putExtra("IS_ADMIN", true)
+                startActivity(intent)
+                finish()
+            } else {
+                // Si no es Admin, es su pantalla principal -> Ofrecer cerrar sesión
+                mostrarDialogoCerrarSesionPersonalizado()
+            }
         }
 
         // Botón Calendario con diseño personalizado: Unifica solicitudes y sesiones confirmadas

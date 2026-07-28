@@ -69,9 +69,12 @@ public class MainActivity extends AppCompatActivity {
             if (password.equals("12345678")) {
                 Toast.makeText(this, "¡Bienvenido Administrador!", Toast.LENGTH_SHORT).show();
 
-                sendUserDataToWear("Administrador", correoMinuscula);
+                sendUserDataToWear("Administrador", correoMinuscula, "admin");
 
                 Intent intent = new Intent(MainActivity.this, MenuAdminActivity.class);
+                intent.putExtra("USUARIO_NOMBRE", "Administrador");
+                intent.putExtra("USUARIO_EMAIL", correoMinuscula);
+                intent.putExtra("IS_ADMIN", true);
                 startActivity(intent);
             } else {
                 Toast.makeText(this, "usuario o contraseña incorrecto", Toast.LENGTH_SHORT).show();
@@ -84,11 +87,12 @@ public class MainActivity extends AppCompatActivity {
             if (password.equals(usuario)) {
                 Toast.makeText(this, "¡Bienvenido Alumno!", Toast.LENGTH_SHORT).show();
 
-                sendUserDataToWear(usuario, correoMinuscula);
+                sendUserDataToWear(usuario, correoMinuscula, "alumno");
 
                 Intent intent = new Intent(MainActivity.this, SolicitudDocente.class);
                 intent.putExtra("USUARIO_EMAIL", correoMinuscula);
                 intent.putExtra("MATRICULA_O_NOMBRE", usuario);
+                intent.putExtra("IS_ADMIN", false);
                 startActivity(intent);
             } else {
                 Toast.makeText(this, "usuario o contraseña incorrecto", Toast.LENGTH_SHORT).show();
@@ -98,11 +102,12 @@ public class MainActivity extends AppCompatActivity {
             if (password.equals("12345678")) {
                 Toast.makeText(this, "¡Bienvenido Docente!", Toast.LENGTH_SHORT).show();
 
-                sendUserDataToWear(usuario, correoMinuscula);
+                sendUserDataToWear(usuario, correoMinuscula, "docente");
 
                 Intent intent = new Intent(MainActivity.this, AgendarAsesoria.class);
                 intent.putExtra("USUARIO_EMAIL", correoMinuscula);
                 intent.putExtra("USUARIO_NOMBRE", usuario);
+                intent.putExtra("IS_ADMIN", false);
                 startActivity(intent);
             } else {
                 Toast.makeText(this, "usuario o contraseña incorrecto", Toast.LENGTH_SHORT).show();
@@ -110,12 +115,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void sendUserDataToWear(String nombre, String email) {
+    private void sendUserDataToWear(String nombre, String email, String role) {
         try {
-            Log.d("WEAR_SYNC", "Iniciando sincronización para: " + nombre);
+            Log.d("WEAR_SYNC", "Iniciando sincronización para: " + nombre + " con rol: " + role);
             PutDataMapRequest dataMap = PutDataMapRequest.create("/user_session");
             dataMap.getDataMap().putString("nombre", nombre);
             dataMap.getDataMap().putString("email", email);
+            dataMap.getDataMap().putString("role", role);
             dataMap.getDataMap().putLong("timestamp", System.currentTimeMillis());
 
             PutDataRequest request = dataMap.asPutDataRequest();

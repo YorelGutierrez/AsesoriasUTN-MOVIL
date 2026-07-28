@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -90,6 +91,15 @@ class MainActivity : ComponentActivity(), SensorEventListener, DataClient.OnData
         super.onCreate(savedInstanceState)
 
         sessionManager = SessionManager(this)
+        
+        // Redirigir si el usuario es maestro
+        val currentRole = sessionManager.getUserRole()
+        if (currentRole == "docente" || currentRole == "admin") {
+            startActivity(Intent(this, MaestroActivity::class.java))
+            finish()
+            return
+        }
+
         alumnoConectadoNombre = sessionManager.getUserName() ?: "Vanessa"
         alumnoConectadoEmail = sessionManager.getUserEmail() ?: "vanessa@utnay.edu.mx"
 
@@ -219,10 +229,17 @@ class MainActivity : ComponentActivity(), SensorEventListener, DataClient.OnData
                 val dataMap = DataMapItem.fromDataItem(event.dataItem).dataMap
                 val nombre = dataMap.getString("nombre", "Vanessa")
                 val email = dataMap.getString("email", "vanessa@utnay.edu.mx")
+                val role = dataMap.getString("role", "alumno")
 
-                sessionManager.saveSession(nombre, email)
-                alumnoConectadoNombre = nombre
-                alumnoConectadoEmail = email
+                sessionManager.saveSession(nombre, email, role)
+                
+                if (role == "docente" || role == "admin") {
+                    startActivity(Intent(this@MainActivity, MaestroActivity::class.java))
+                    finish()
+                } else {
+                    alumnoConectadoNombre = nombre
+                    alumnoConectadoEmail = email
+                }
             }
         }
     }

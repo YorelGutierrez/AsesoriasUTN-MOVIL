@@ -162,13 +162,12 @@ public class AgendarAsesoria extends AppCompatActivity {
                 String correoDocenteActual = getIntent().getStringExtra("USUARIO_EMAIL");
                 if (correoDocenteActual == null) correoDocenteActual = "docente@utnay.edu.mx";
 
-                // CORRECCIÓN CLAVE: Construir el correo institucional fijo basado en la matrícula (ej: tic-310073@utnay.edu.mx)
-                String matricula = alumnoSeleccionado.getMatricula(); // Asegúrate de que tu modelo Alumno tenga getMatricula()
+                // Construir el correo institucional fijo basado en la matrícula
+                String matricula = alumnoSeleccionado.getMatricula();
                 String correoAlumno;
                 if (matricula != null && !matricula.isEmpty()) {
                     correoAlumno = matricula.toLowerCase().trim() + "@utnay.edu.mx";
                 } else {
-                    // Respaldo por si la matrícula viniera vacía
                     correoAlumno = alumnoSeleccionado.getCorreo();
                     if (correoAlumno == null || correoAlumno.isEmpty() || correoAlumno.contains("alumno@")) {
                         correoAlumno = "alumno@utnay.edu.mx";
@@ -181,7 +180,6 @@ public class AgendarAsesoria extends AppCompatActivity {
             }
         });
     }
-
 
     private long obtenerIdDocenteActual() {
         String docenteStr = getIntent().getStringExtra("DOCENTE_ID");
@@ -198,16 +196,40 @@ public class AgendarAsesoria extends AppCompatActivity {
         if (usuarioSesion == null || usuarioSesion.isEmpty()) {
             usuarioSesion = "Docente";
         }
-        String iniciales = usuarioSesion.length() >= 2 ? usuarioSesion.substring(0, 2).toUpperCase() : "DT";
+
+        // Avatar Dinámico: Calcula iniciales automáticamente
+        String iniciales = "VM"; // Default
+        if (usuarioSesion.length() >= 2) {
+            String[] partes = usuarioSesion.trim().split("\\s+");
+            if (partes.length >= 2) {
+                iniciales = (partes[0].substring(0, 1) + partes[1].substring(0, 1)).toUpperCase();
+            } else {
+                iniciales = usuarioSesion.substring(0, Math.min(usuarioSesion.length(), 2)).toUpperCase();
+            }
+        }
         tvAvatarUsuario.setText(iniciales);
 
-        //Nuevo
-        tvAvatarUsuario.setOnClickListener(v -> {
-            Intent intent = new Intent(AgendarAsesoria.this, perfil_docente.class);
-            startActivity(intent);
-        });
+        // El avatar mantiene exclusivamente la ventana emergente de Cerrar Sesión
+        tvAvatarUsuario.setOnClickListener(v -> mostrarDialogoCerrarSesionPersonalizado());
 
-        btnRegresar.setOnClickListener(v -> mostrarDialogoCerrarSesionPersonalizado());
+        // El botón regresar redirige según el ROL del usuario
+        boolean isAdmin = getIntent().getBooleanExtra("IS_ADMIN", false);
+        String finalUsuarioSesion = usuarioSesion;
+
+        btnRegresar.setOnClickListener(v -> {
+            if (isAdmin) {
+                // Si es Admin, regresa al panel de administración
+                Intent intent = new Intent(AgendarAsesoria.this, MenuAdminActivity.class);
+                intent.putExtra("USUARIO_NOMBRE", finalUsuarioSesion);
+                intent.putExtra("USUARIO_EMAIL", getIntent().getStringExtra("USUARIO_EMAIL"));
+                intent.putExtra("IS_ADMIN", true);
+                startActivity(intent);
+                finish();
+            } else {
+                // Si no es Admin, es su pantalla principal -> Ofrecer cerrar sesión
+                mostrarDialogoCerrarSesionPersonalizado();
+            }
+        });
 
         // Botón Calendario: Muestra las solicitudes de asesoría hechas por los alumnos hacia este docente
         btnIconoCalendario.setOnClickListener(v -> {
@@ -377,7 +399,6 @@ public class AgendarAsesoria extends AppCompatActivity {
                         adapterGrupos.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                         spinnerGrupos.setAdapter(adapterGrupos);
                     } else {
-                        // REPORTE DE ERROR: Muestra el código si la base de datos rechaza la petición
                         Log.e("SUPABASE_ERROR", "Error al cargar alumnos: " + response.code());
                         Toast.makeText(AgendarAsesoria.this, "Error de datos: " + response.code(), Toast.LENGTH_SHORT).show();
                     }
@@ -399,7 +420,6 @@ public class AgendarAsesoria extends AppCompatActivity {
 
         SupabaseApiService apiService = obtenerRetrofitConAuth().create(SupabaseApiService.class);
 
-        // Consulta filtrada directamente por el correo del docente en la tabla de solicitudes
         apiService.getSolicitudesPorDocente("eq." + correoDocenteActual).enqueue(new Callback<List<SolicitudAsesoriaRequest>>() {
             @Override
             public void onResponse(Call<List<SolicitudAsesoriaRequest>> call, Response<List<SolicitudAsesoriaRequest>> response) {
