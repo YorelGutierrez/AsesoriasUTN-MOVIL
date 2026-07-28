@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d("LOGIN_UTN", "Botón Iniciar Sesión presionado");
                 String correo = txtCorreo.getText().toString().trim();
                 String password = txtPassword.getText().toString().trim();
 
@@ -40,8 +41,13 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                // Lógica de validación según el tipo de correo
-                procesarLogin(correo, password);
+                try {
+                    // Lógica de validación según el tipo de correo
+                    procesarLogin(correo, password);
+                } catch (Exception e) {
+                    Log.e("LOGIN_UTN", "Error inesperado en procesarLogin", e);
+                    Toast.makeText(MainActivity.this, "Error al procesar el inicio de sesión", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -105,16 +111,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void sendUserDataToWear(String nombre, String email) {
-        PutDataMapRequest dataMap = PutDataMapRequest.create("/user_session");
-        dataMap.getDataMap().putString("nombre", nombre);
-        dataMap.getDataMap().putString("email", email);
-        dataMap.getDataMap().putLong("timestamp", System.currentTimeMillis());
+        try {
+            Log.d("WEAR_SYNC", "Iniciando sincronización para: " + nombre);
+            PutDataMapRequest dataMap = PutDataMapRequest.create("/user_session");
+            dataMap.getDataMap().putString("nombre", nombre);
+            dataMap.getDataMap().putString("email", email);
+            dataMap.getDataMap().putLong("timestamp", System.currentTimeMillis());
 
-        PutDataRequest request = dataMap.asPutDataRequest();
-        request.setUrgent();
+            PutDataRequest request = dataMap.asPutDataRequest();
+            request.setUrgent();
 
-        Wearable.getDataClient(this).putDataItem(request)
-                .addOnSuccessListener(dataItem -> Log.d("WEAR_SYNC", "Datos enviados al reloj: " + nombre))
-                .addOnFailureListener(e -> Log.e("WEAR_SYNC", "Fallo al sincronizar con el reloj", e));
+            Wearable.getDataClient(this).putDataItem(request)
+                    .addOnSuccessListener(dataItem -> Log.d("WEAR_SYNC", "Datos enviados al reloj: " + nombre))
+                    .addOnFailureListener(e -> Log.e("WEAR_SYNC", "Fallo al sincronizar con el reloj", e));
+        } catch (Exception e) {
+            Log.e("WEAR_SYNC", "Error crítico al intentar conectar con Wearable API", e);
+            // No bloqueamos el flujo principal si el reloj falla
+        }
     }
 }
