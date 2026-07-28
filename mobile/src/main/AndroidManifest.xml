@@ -34,9 +34,6 @@
             android:name=".MenuAdminActivity"
             android:exported="false" /> <!-- Menú de Administrador -->
         <activity
-            android:name=".MenuAdminActivity"
-            android:exported="false" /> <!-- Actividad de Solicitar Asesoría (Docente) -->
-        <activity
             android:name=".SolicitudDocente"
             android:exported="false" />
     </application>

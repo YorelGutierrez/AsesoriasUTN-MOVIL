@@ -1,31 +1,38 @@
-# Plan de Implementación: Consultar Solicitudes en Wear OS
+# Plan de Resolución: Error al Ejecutar la Aplicación
 
-Este plan detalla los pasos para que el botón "Mis Solicitudes" en el reloj realmente traiga y muestre la lista de asesorías pedidas desde Supabase.
+He detectado un conflicto potencial en la configuración del proyecto que podría estar impidiendo que Android Studio ejecute la aplicación correctamente. Los módulos `mobile` y `wear` comparten el mismo `namespace`, lo que puede causar confusiones al IDE durante el despliegue.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> **Navegación en el Reloj**: Dado que la pantalla es pequeña, mostraré las solicitudes como elementos adicionales en la lista principal debajo de los botones cuando se presione "Mis Solicitudes".
+> **Conflicto de Identificadores**: Ambos módulos (`mobile` y `wear`) tienen asignado el mismo espacio de nombres (`com.example.asesoriasutn`). Voy a diferenciar el módulo del reloj para que sea único.
 >
-> **Identidad**: Al igual que en la función de "Pedir Asesoría", por ahora usaré el correo de prueba `vanessa@utnay.edu.mx` hasta que implementemos la sincronización real de sesión.
+> **Limpieza de Caché**: Después de aplicar estos cambios, es muy probable que necesites realizar un "Clean Project" y "Rebuild Project".
 
 ## Proposed Changes
 
-### [Network Layer]
+### [Gradle Configuration]
 
-#### [MODIFY] [SupabaseWearApiService.kt](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/wear/src/main/java/com/example/asesoriasutn/presentation/network/SupabaseWearApiService.kt)
-- Añadir el método `getSolicitudesPorAlumno` con el parámetro de filtrado por correo.
+#### [MODIFY] [wear/build.gradle.kts](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/wear/build.gradle.kts)
+- Cambiar `namespace` a `com.example.asesoriasutn.wear`.
+- Cambiar `applicationId` a `com.example.asesoriasutn.wear` para evitar conflictos de instalación en el mismo entorno de desarrollo.
 
 ### [UI Layer]
 
-#### [MODIFY] [MainActivity.kt](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/wear/src/main/java/com/example/asesoriasutn/presentation/MainActivity.kt)
-- Crear una nueva variable de estado `listaSolicitudes` para almacenar los datos recibidos.
-- Implementar la función `cargarSolicitudesDesdeSupabase()`.
-- Actualizar la interfaz para que, si la lista no está vacía, se muestren tarjetas con el tema y la fecha de cada asesoría.
+#### [MODIFY] [wear/src/main/java/com/example/asesoriasutn/presentation/MainActivity.kt](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/wear/src/main/java/com/example/asesoriasutn/presentation/MainActivity.kt)
+- Actualizar los *imports* automáticos que utilicen el nuevo `namespace`.
+
+#### [MODIFY] [mobile/src/main/res/layout/activity_perfil_docente.xml](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/mobile/src/main/res/layout/activity_perfil_docente.xml)
+- Añadir el ID `android:id="@+id/main"` al contenedor raíz para evitar posibles fallos al aplicar insets de pantalla (bordes redondeados).
 
 ## Verification Plan
 
+### Automated Tests
+- Ejecutar `./gradlew clean :mobile:assembleDebug` para asegurar que el celular compila.
+- Ejecutar `./gradlew :wear:assembleDebug` para asegurar que el reloj compila con su nuevo identificador.
+
 ### Manual Verification
-1. Abrir la app en el reloj.
-2. Presionar el botón "Mis Solicitudes".
-3. Verificar que el texto cambie a "Cargando..." y luego aparezcan los temas de las asesorías enviadas previamente debajo de los botones.
+1. Abrir Android Studio.
+2. Ir a **Build > Clean Project**.
+3. Seleccionar el módulo **mobile** en el menú desplegable de ejecución (cerca del botón Play).
+4. Presionar el botón **Play (Run)**.

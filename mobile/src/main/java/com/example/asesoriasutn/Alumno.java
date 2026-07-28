@@ -30,6 +30,11 @@ public class Alumno {
         return (user != null) ? user.getEmail() : null;
     }
 
+    // MÉTODO AÑADIDO: Permite extraer la matrícula del usuario vinculado para formar el correo institucional
+    public String getMatricula() {
+        return (user != null) ? user.getMatricula() : null;
+    }
+
     public String getNombreCompleto() {
         if (user != null) {
             String nombres = user.getNombres() != null ? user.getNombres() : "";
