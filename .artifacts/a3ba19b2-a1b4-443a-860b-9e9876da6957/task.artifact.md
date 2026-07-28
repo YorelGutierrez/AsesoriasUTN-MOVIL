@@ -1,6 +1,8 @@
-# Tareas: Consultar Solicitudes en Wear OS
+# Tareas: Sincronización de Sesión Phone -> Wear
 
-- [x] Añadir `getSolicitudesPorAlumno` en `SupabaseWearApiService.kt`
-- [x] Implementar lógica de carga en `MainActivity.kt`
-- [x] Mostrar lista de solicitudes en la UI del reloj
-- [x] Verificar compilación y funcionamiento
+- [x] Añadir dependencias de Wearable Data Layer (si faltan)
+- [x] Implementar `sendUserDataToWear` en `MainActivity.java` (Mobile)
+- [x] Crear `SessionManager.kt` en el módulo Wear
+- [x] Implementar `OnDataChangedListener` en `MainActivity.kt` (Wear)
+- [x] Vincular datos recibidos con las peticiones a Supabase en el reloj
+- [x] Verificar compilación y sincronización

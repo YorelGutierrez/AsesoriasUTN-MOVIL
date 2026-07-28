@@ -1,5 +1,6 @@
 package com.example.asesoriasutn.presentation.network
 
+import com.example.asesoriasutn.presentation.models.Docente
 import com.example.asesoriasutn.presentation.models.SolicitudAsesoriaWearRequest
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -19,6 +20,14 @@ interface SupabaseWearApiService {
     )
     @POST("rest/v1/solicitudes_asesoria")
     fun registrarSolicitud(@Body solicitud: SolicitudAsesoriaWearRequest): Call<Void>
+
+    @Headers(
+        "apikey: sb_publishable_8hbEGvtOKw3SvnVz7apPlg_KWVdL5xe",
+        "Authorization: Bearer sb_publishable_8hbEGvtOKw3SvnVz7apPlg_KWVdL5xe",
+        "Content-Type: application/json"
+    )
+    @GET("rest/v1/users?select=id,nombres,apellido_paterno,email&rol=eq.docente")
+    fun getDocentes(): Call<List<Docente>>
 
     @Headers(
         "apikey: sb_publishable_8hbEGvtOKw3SvnVz7apPlg_KWVdL5xe",
