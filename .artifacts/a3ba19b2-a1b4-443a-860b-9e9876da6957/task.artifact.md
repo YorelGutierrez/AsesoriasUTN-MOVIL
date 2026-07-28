@@ -1,6 +1,6 @@
-# Tareas: Resolución de Error de Ejecución
+# Tareas: Reparación del Módulo Wear OS
 
-- [ ] `[ ]` Diferenciar el `namespace` y `applicationId` del módulo `wear`
-- [ ] `[ ]` Añadir ID faltante en el layout del perfil docente
-- [ ] `[ ]` Realizar limpieza y reconstrucción del proyecto
-- [ ] `[ ]` Verificar el flujo de inicio de la aplicación
+- [x] Sincronizar `applicationId` en `wear/build.gradle.kts`
+- [x] Inicializar Splash Screen en `MainActivity.kt`
+- [x] Corregir imports de recursos (R) si es necesario
+- [ ] Verificar ejecución en el reloj

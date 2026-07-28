@@ -245,7 +245,6 @@ class SolicitudDocente : AppCompatActivity() {
                 mostrarDialogoPersonalizado("🔔 Nueva Asesoría Agendada", mensaje, "Entendido", null, false, null)
             } else if (listaSolicitudesBD.isNotEmpty()) {
                 val ultimaSol = listaSolicitudesBD.last()
-                val fecha = formatearFechaLegible(ultimaSol.fechaHora)
                 val mensaje = "Tu solicitud para ${ultimaSol.correoDocente} ha sido enviada correctamente y está a la espera de confirmación."
                 
                 mostrarDialogoPersonalizado("🔔 Estado de Solicitud", mensaje, "Entendido", null, false, null)
