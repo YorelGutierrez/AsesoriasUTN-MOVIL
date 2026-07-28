@@ -1,12 +1,19 @@
 package com.example.asesoriasutn.presentation
 
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -14,18 +21,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.wear.compose.foundation.lazy.TransformingLazyColumn
 import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.material3.AppScaffold
 import androidx.wear.compose.material3.Button
 import androidx.wear.compose.material3.ButtonDefaults
-import androidx.wear.compose.material3.Card
-import androidx.wear.compose.material3.CardDefaults
 import androidx.wear.compose.material3.EdgeButton
 import androidx.wear.compose.material3.ListHeader
 import androidx.wear.compose.material3.MaterialTheme
@@ -36,39 +40,136 @@ import androidx.wear.compose.material3.lazy.rememberTransformationSpec
 import androidx.wear.compose.material3.lazy.transformedHeight
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
-import com.example.asesoriasutn.presentation.models.SolicitudAsesoriaWearRequest
-import com.example.asesoriasutn.presentation.network.RetrofitClient
 import com.example.asesoriasutn.presentation.theme.AsesoriasUTNTheme
+import com.example.asesoriasutn.wear.R
 import kotlinx.coroutines.delay
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), SensorEventListener {
+
+    private lateinit var sensorManager: SensorManager
+    private var rotationSensor: Sensor? = null
+
+    // Alumno vinculado a este dispositivo (Puedes cambiarlo por Rubí, Sofía, Vanessa, etc. según la sesión actual)
+    private val alumnoConectado = "Vanessa"
+
+    var estadoAsesoria by mutableStateOf("Esperando asesoría...")
+    var isAsesoriaAceptada by mutableStateOf(false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+            ?: sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101)
+            }
+        }
+
+        createNotificationChannel(this)
+
         setContent {
-            WearApp()
+            WearApp(
+                alumnoActual = alumnoConectado,
+                estadoAsesoria = estadoAsesoria,
+                isAceptada = isAsesoriaAceptada,
+                onAceptarManual = {
+                    if (!isAsesoriaAceptada) {
+                        isAsesoriaAceptada = true
+                        estadoAsesoria = "¡Asesoría Aceptada!"
+                        enviarNotificacionPersonalizada(this, "Ing. Roberto", "Mañana", "11:00 AM", alumnoConectado)
+                    }
+                }
+            )
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        rotationSensor?.let {
+            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(this)
+    }
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        // Gesto de la muñeca para aceptar automáticamente
+        if (!isAsesoriaAceptada && event != null) {
+            val values = event.values
+            if (values.isNotEmpty()) {
+                if (Math.abs(values[0]) > 0.4f || Math.abs(values[1]) > 0.4f) {
+                    isAsesoriaAceptada = true
+                    estadoAsesoria = "¡Aceptada por Gesto!"
+                    enviarNotificacionPersonalizada(this, "Ing. Roberto", "Mañana", "11:00 AM", alumnoConectado)
+                }
+            }
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
+    // Método que simula la recepción real desde la base de datos/backend del docente
+    // Valida estrictamente que si va dirigido a otro alumno, este dispositivo no muestre nada.
+    fun recibirSolicitudExclusiva(docente: String, fecha: String, hora: String, alumnoDestino: String) {
+        if (alumnoDestino == alumnoConectado) {
+            estadoAsesoria = "Asesoría de $docente"
+            enviarNotificacionPersonalizada(this, docente, fecha, hora, alumnoDestino)
+        } else {
+            // Si la asesoría es para Rubí, Sofía u otro, este reloj (de Vanessa) la ignora por completo
+            return
         }
     }
 }
 
+fun enviarNotificacionPersonalizada(context: Context, docente: String, fecha: String, hora: String, alumno: String) {
+    val builder = NotificationCompat.Builder(context, "asesorias_channel")
+        .setSmallIcon(android.R.drawable.ic_dialog_info)
+        .setContentTitle("Asesoría Asignada")
+        .setContentText("$docente: $fecha - $hora")
+        .setStyle(NotificationCompat.BigTextStyle().bigText("Hola $alumno, tienes una asesoría exclusiva con el docente $docente programada para el día $fecha a las $hora."))
+        .setPriority(NotificationCompat.PRIORITY_HIGH)
+        .setAutoCancel(true)
+
+    with(NotificationManagerCompat.from(context)) {
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            notify(2, builder.build())
+        }
+    }
+}
+
+fun createNotificationChannel(context: Context) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val channel = NotificationChannel("asesorias_channel", "Canal de Asesorias", NotificationManager.IMPORTANCE_HIGH).apply {
+            description = "Notificaciones dirigidas y exclusivas"
+        }
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.createNotificationChannel(channel)
+    }
+}
+
 @Composable
-fun WearApp() {
+fun WearApp(
+    alumnoActual: String,
+    estadoAsesoria: String,
+    isAceptada: Boolean,
+    onAceptarManual: () -> Unit
+) {
     AsesoriasUTNTheme {
         AppScaffold {
             val listState = rememberTransformingLazyColumnState()
             val transformationSpec = rememberTransformationSpec()
 
             var currentTime by remember { mutableStateOf("") }
-            var estadoMensaje by remember { mutableStateOf("") }
-            var isLoading by remember { mutableStateOf(false) }
-            var listaSolicitudes by remember { mutableStateOf<List<SolicitudAsesoriaWearRequest>>(listOf()) }
 
-            // Actualizar reloj cada segundo
             LaunchedEffect(Unit) {
                 while (true) {
                     val sdf = SimpleDateFormat("hh:mm:ss a", Locale.getDefault())
@@ -81,177 +182,58 @@ fun WearApp() {
                 scrollState = listState,
                 edgeButton = {
                     EdgeButton(
-                        onClick = { 
-                            estadoMensaje = ""
-                            listaSolicitudes = listOf()
-                        },
+                        onClick = { onAceptarManual() },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF0D9488),
-                            contentColor = Color.White,
+                            containerColor = androidx.compose.ui.graphics.Color(0xFF0D9488),
+                            contentColor = androidx.compose.ui.graphics.Color.White,
                         ),
                     ) {
-                        Text(if (estadoMensaje.isEmpty() && listaSolicitudes.isEmpty()) "Listo" else "Limpiar")
+                        Text("Aceptar")
                     }
                 },
             ) { contentPadding ->
                 TransformingLazyColumn(contentPadding = contentPadding, state = listState) {
-                    // Reloj principal
                     item {
                         ListHeader(
                             modifier = Modifier.fillMaxWidth().transformedHeight(this, transformationSpec),
                             transformation = SurfaceTransformation(transformationSpec),
                         ) {
                             Text(
-                                text = if (currentTime.isEmpty()) "Cargando..." else currentTime,
+                                text = if (currentTime.isEmpty()) "Asesorías" else currentTime,
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = TextAlign.Center,
                                 style = MaterialTheme.typography.titleMedium,
-                                color = Color(0xFF059669)
+                                color = androidx.compose.ui.graphics.Color(0xFF059669)
                             )
                         }
                     }
 
-                    // Mensaje dinámico de estado
-                    if (estadoMensaje.isNotEmpty()) {
-                        item {
-                            ListHeader(
-                                modifier = Modifier.fillMaxWidth().transformedHeight(this, transformationSpec),
-                                transformation = SurfaceTransformation(transformationSpec),
-                            ) {
-                                Text(
-                                    text = estadoMensaje,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFF0D9488)
-                                )
-                            }
-                        }
-                    }
-
-                    // Botón 1: Pedir Asesoría
                     item {
-                        Button(
-                            onClick = {
-                                if (!isLoading) {
-                                    isLoading = true
-                                    estadoMensaje = "Enviando..."
-
-                                    val sdfFecha = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                                    val fechaActualStr = sdfFecha.format(Date())
-
-                                    val nuevaSolicitud = SolicitudAsesoriaWearRequest(
-                                        correoAlumno = "vanessa@utnay.edu.mx",
-                                        correoDocente = "docente@utnay.edu.mx",
-                                        docenteId = 1L,
-                                        queAprender = "Asesoría rápida desde Wear OS",
-                                        conocimientoPrevio = true,
-                                        necesitaMaterial = false,
-                                        ejerciciosEspecificos = true,
-                                        objetivo = "Consulta rápida de reloj",
-                                        modalidad = "Virtual / En línea",
-                                        fechaHora = fechaActualStr
-                                    )
-
-                                    enviarSolicitudASupabase(nuevaSolicitud) { exito, mensaje ->
-                                        isLoading = false
-                                        estadoMensaje = if (exito) "¡Enviado con éxito!" else "Error: $mensaje"
-                                    }
-                                }
-                            },
+                        ListHeader(
                             modifier = Modifier.fillMaxWidth().transformedHeight(this, transformationSpec),
                             transformation = SurfaceTransformation(transformationSpec),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF0D9488),
-                                contentColor = Color.White
-                            )
                         ) {
-                            Text(if (isLoading) "Enviando..." else "Pedir Asesoría")
-                        }
-                    }
-
-                    // Botón 2: Ver Horarios
-                    item {
-                        Button(
-                            onClick = { estadoMensaje = "Sin horarios nuevos." },
-                            modifier = Modifier.fillMaxWidth().transformedHeight(this, transformationSpec),
-                            transformation = SurfaceTransformation(transformationSpec),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFF1F5F9),
-                                contentColor = Color(0xFF0F172A)
-                            )
-                        ) {
-                            Text("Ver Horarios")
-                        }
-                    }
-
-                    // Botón 3: Mis Solicitudes
-                    item {
-                        Button(
-                            onClick = {
-                                if (!isLoading) {
-                                    isLoading = true
-                                    estadoMensaje = "Cargando solicitudes..."
-                                    cargarSolicitudesDesdeSupabase("vanessa@utnay.edu.mx") { exito, solicitudes ->
-                                        isLoading = false
-                                        if (exito) {
-                                            listaSolicitudes = solicitudes
-                                            estadoMensaje = if (solicitudes.isEmpty()) "No tienes solicitudes." else ""
-                                        } else {
-                                            estadoMensaje = "Error al cargar."
-                                        }
-                                    }
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth().transformedHeight(this, transformationSpec),
-                            transformation = SurfaceTransformation(transformationSpec),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFFF1F5F9),
-                                contentColor = Color(0xFF0F172A)
-                            )
-                        ) {
-                            Text("Mis Solicitudes")
-                        }
-                    }
-
-                    // Mostrar lista de solicitudes si existen
-                    if (listaSolicitudes.isNotEmpty()) {
-                        item {
                             Text(
-                                text = "Tus Peticiones:",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color.Gray,
-                                modifier = Modifier.padding(vertical = 8.dp).fillMaxWidth(),
-                                textAlign = TextAlign.Center
+                                text = "$estadoAsesoria\n($alumnoActual)",
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (isAceptada) androidx.compose.ui.graphics.Color(0xFF059669) else androidx.compose.ui.graphics.Color(0xFF0D9488)
                             )
                         }
-                        
-                        items(listaSolicitudes.size) { index ->
-                            val solicitud = listaSolicitudes[index]
-                            Card(
-                                onClick = { /* Detalle opcional */ },
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp).transformedHeight(this, transformationSpec),
-                                transformation = SurfaceTransformation(transformationSpec),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = Color(0xFFF8FAFC)
-                                )
-                            ) {
-                                Column(modifier = Modifier.padding(8.dp)) {
-                                    Text(
-                                        text = solicitud.queAprender,
-                                        style = MaterialTheme.typography.bodySmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 12.sp
-                                        ),
-                                        color = Color(0xFF0F172A)
-                                    )
-                                    Text(
-                                        text = solicitud.fechaHora,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = Color(0xFF64748B)
-                                    )
-                                }
-                            }
+                    }
+
+                    item {
+                        Button(
+                            onClick = { /* Acción estática de guía */ },
+                            modifier = Modifier.fillMaxWidth().transformedHeight(this, transformationSpec),
+                            transformation = SurfaceTransformation(transformationSpec),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = androidx.compose.ui.graphics.Color(0xFFF1F5F9),
+                                contentColor = androidx.compose.ui.graphics.Color(0xFF0F172A)
+                            )
+                        ) {
+                            Text(if (isAceptada) "✓ Asesoría Aceptada" else "Gira la muñeca para aceptar")
                         }
                     }
                 }
@@ -260,46 +242,9 @@ fun WearApp() {
     }
 }
 
-fun enviarSolicitudASupabase(solicitud: SolicitudAsesoriaWearRequest, callback: (Boolean, String) -> Unit) {
-    RetrofitClient.apiService.registrarSolicitud(solicitud).enqueue(object : Callback<Void> {
-        override fun onResponse(call: Call<Void>, response: Response<Void>) {
-            if (response.isSuccessful) {
-                callback(true, "OK")
-            } else {
-                val errorMsg = response.errorBody()?.string() ?: "Error"
-                Log.e("WEAR_SUPABASE", "Error: $errorMsg")
-                callback(false, "${response.code()}")
-            }
-        }
-
-        override fun onFailure(call: Call<Void>, t: Throwable) {
-            Log.e("WEAR_SUPABASE", "Fallo: ${t.message}")
-            callback(false, t.message ?: "Fallo de red")
-        }
-    })
-}
-
-fun cargarSolicitudesDesdeSupabase(correo: String, callback: (Boolean, List<SolicitudAsesoriaWearRequest>) -> Unit) {
-    RetrofitClient.apiService.getSolicitudesPorAlumno("eq.$correo").enqueue(object : Callback<List<SolicitudAsesoriaWearRequest>> {
-        override fun onResponse(call: Call<List<SolicitudAsesoriaWearRequest>>, response: Response<List<SolicitudAsesoriaWearRequest>>) {
-            if (response.isSuccessful && response.body() != null) {
-                callback(true, response.body()!!)
-            } else {
-                Log.e("WEAR_SUPABASE", "Error al cargar: ${response.code()}")
-                callback(false, listOf())
-            }
-        }
-
-        override fun onFailure(call: Call<List<SolicitudAsesoriaWearRequest>>, t: Throwable) {
-            Log.e("WEAR_SUPABASE", "Fallo al cargar: ${t.message}")
-            callback(false, listOf())
-        }
-    })
-}
-
 @WearPreviewDevices
 @WearPreviewFontScales
 @Composable
 fun DefaultPreview() {
-    WearApp()
+    WearApp("Vanessa", "Esperando asesoría...", false, {})
 }

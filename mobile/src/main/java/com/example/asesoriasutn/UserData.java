@@ -12,6 +12,9 @@ public class UserData {
     @SerializedName("email")
     private String email;
 
+    @SerializedName("matricula")
+    private String matricula;
+
     public UserData() {}
 
     public String getNombres() {
@@ -24,5 +27,9 @@ public class UserData {
 
     public String getEmail() {
         return email;
+    }
+
+    public String getMatricula() {
+        return matricula;
     }
 }

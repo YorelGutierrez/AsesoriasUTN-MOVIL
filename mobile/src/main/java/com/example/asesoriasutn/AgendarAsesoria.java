@@ -154,17 +154,25 @@ public class AgendarAsesoria extends AppCompatActivity {
 
             int indiceReal = posicionSeleccionada - 1;
             if (indiceReal < listaAlumnosFiltrada.size()) {
-                int idAlumnoSeleccionado = listaAlumnosFiltrada.get(indiceReal).getId();
+                Alumno alumnoSeleccionado = listaAlumnosFiltrada.get(indiceReal);
+                int idAlumnoSeleccionado = alumnoSeleccionado.getId();
 
                 // Obtener datos del docente actual de forma segura desde el Intent
                 long docenteIdActual = obtenerIdDocenteActual();
                 String correoDocenteActual = getIntent().getStringExtra("USUARIO_EMAIL");
                 if (correoDocenteActual == null) correoDocenteActual = "docente@utnay.edu.mx";
 
-                // Obtener correo real del alumno seleccionado
-                String correoAlumno = listaAlumnosFiltrada.get(indiceReal).getCorreo();
-                if (correoAlumno == null || correoAlumno.isEmpty()) {
-                    correoAlumno = "alumno@utnay.edu.mx";
+                // CORRECCIÓN CLAVE: Construir el correo institucional fijo basado en la matrícula (ej: tic-310073@utnay.edu.mx)
+                String matricula = alumnoSeleccionado.getMatricula(); // Asegúrate de que tu modelo Alumno tenga getMatricula()
+                String correoAlumno;
+                if (matricula != null && !matricula.isEmpty()) {
+                    correoAlumno = matricula.toLowerCase().trim() + "@utnay.edu.mx";
+                } else {
+                    // Respaldo por si la matrícula viniera vacía
+                    correoAlumno = alumnoSeleccionado.getCorreo();
+                    if (correoAlumno == null || correoAlumno.isEmpty() || correoAlumno.contains("alumno@")) {
+                        correoAlumno = "alumno@utnay.edu.mx";
+                    }
                 }
 
                 guardarSesionEnSupabase(idAlumnoSeleccionado, tema, objetivo, fechaSeleccionada, hora, modalidad, docenteIdActual, correoAlumno, correoDocenteActual);
@@ -173,6 +181,7 @@ public class AgendarAsesoria extends AppCompatActivity {
             }
         });
     }
+
 
     private long obtenerIdDocenteActual() {
         String docenteStr = getIntent().getStringExtra("DOCENTE_ID");
@@ -367,6 +376,10 @@ public class AgendarAsesoria extends AppCompatActivity {
                         );
                         adapterGrupos.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                         spinnerGrupos.setAdapter(adapterGrupos);
+                    } else {
+                        // REPORTE DE ERROR: Muestra el código si la base de datos rechaza la petición
+                        Log.e("SUPABASE_ERROR", "Error al cargar alumnos: " + response.code());
+                        Toast.makeText(AgendarAsesoria.this, "Error de datos: " + response.code(), Toast.LENGTH_SHORT).show();
                     }
                 });
             }
