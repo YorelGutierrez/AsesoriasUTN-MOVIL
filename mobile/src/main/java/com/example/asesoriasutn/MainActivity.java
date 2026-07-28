@@ -56,40 +56,51 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        String usuario = correoMinuscula.split("@")[0];
+
         // 1. CASO ADMINISTRADOR
-        if (correoMinuscula.equals("admin@utnay.edu.mx")) {
-            Toast.makeText(this, "¡Bienvenido Administrador!", Toast.LENGTH_SHORT).show();
+        if (usuario.equals("admin")) {
+            if (password.equals("12345678")) {
+                Toast.makeText(this, "¡Bienvenido Administrador!", Toast.LENGTH_SHORT).show();
 
-            sendUserDataToWear("Administrador", correoMinuscula);
+                sendUserDataToWear("Administrador", correoMinuscula);
 
-            // Redirige al nuevo menú con las dos opciones para el administrador
-            Intent intent = new Intent(MainActivity.this, MenuAdminActivity.class);
-            startActivity(intent);
+                Intent intent = new Intent(MainActivity.this, MenuAdminActivity.class);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "usuario o contraseña incorrecto", Toast.LENGTH_SHORT).show();
+            }
             return;
         }
 
         // 2. CASO ALUMNO (Contiene guion y números, ej: tic-310010)
-        String usuario = correoMinuscula.split("@")[0];
         if (usuario.contains("-") || usuario.matches(".*\\d.*")) {
-            Toast.makeText(this, "¡Bienvenido Alumno!", Toast.LENGTH_SHORT).show();
+            if (password.equals(usuario)) {
+                Toast.makeText(this, "¡Bienvenido Alumno!", Toast.LENGTH_SHORT).show();
 
-            sendUserDataToWear(usuario, correoMinuscula);
+                sendUserDataToWear(usuario, correoMinuscula);
 
-            Intent intent = new Intent(MainActivity.this, SolicitudDocente.class);
-            intent.putExtra("USUARIO_EMAIL", correoMinuscula);
-            intent.putExtra("MATRICULA_O_NOMBRE", usuario);
-            startActivity(intent);
-
+                Intent intent = new Intent(MainActivity.this, SolicitudDocente.class);
+                intent.putExtra("USUARIO_EMAIL", correoMinuscula);
+                intent.putExtra("MATRICULA_O_NOMBRE", usuario);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "usuario o contraseña incorrecto", Toast.LENGTH_SHORT).show();
+            }
         } else {
             // 3. CASO DOCENTE (ej: juan@utnay.edu.mx)
-            Toast.makeText(this, "¡Bienvenido Docente!", Toast.LENGTH_SHORT).show();
+            if (password.equals("12345678")) {
+                Toast.makeText(this, "¡Bienvenido Docente!", Toast.LENGTH_SHORT).show();
 
-            sendUserDataToWear(usuario, correoMinuscula);
+                sendUserDataToWear(usuario, correoMinuscula);
 
-            Intent intent = new Intent(MainActivity.this, AgendarAsesoria.class);
-            intent.putExtra("USUARIO_EMAIL", correoMinuscula);
-            intent.putExtra("USUARIO_NOMBRE", usuario);
-            startActivity(intent);
+                Intent intent = new Intent(MainActivity.this, AgendarAsesoria.class);
+                intent.putExtra("USUARIO_EMAIL", correoMinuscula);
+                intent.putExtra("USUARIO_NOMBRE", usuario);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "usuario o contraseña incorrecto", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -107,3 +118,4 @@ public class MainActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> Log.e("WEAR_SYNC", "Fallo al sincronizar con el reloj", e));
     }
 }
+

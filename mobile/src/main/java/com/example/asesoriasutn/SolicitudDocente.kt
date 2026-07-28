@@ -45,6 +45,7 @@ class SolicitudDocente : AppCompatActivity() {
     private var fechaSeleccionada = ""
     private var listaDocentesGlobal: List<Docente> = listOf()
     private var listaSolicitudesBD: List<SolicitudAsesoriaRequest> = listOf()
+    private var listaSesionesConfirmadasBD: List<AsesoriaRequest> = listOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,6 +87,7 @@ class SolicitudDocente : AppCompatActivity() {
         // Cargar datos reales desde Supabase
         cargarDocentesDesdeSupabase()
         cargarSolicitudesDelAlumnoDesdeSupabase()
+        cargarSesionesConfirmadasDesdeSupabase()
 
         // Configurar calendario
         calendarView.firstDayOfWeek = Calendar.MONDAY
@@ -192,35 +194,63 @@ class SolicitudDocente : AppCompatActivity() {
             mostrarDialogoCerrarSesionPersonalizado()
         }
 
-        // Botón Calendario con diseño personalizado y filtrado privado de solicitudes enviadas por el alumno
+        // Botón Calendario con diseño personalizado: Unifica solicitudes y sesiones confirmadas
         btnIconoCalendario.setOnClickListener {
-            if (listaSolicitudesBD.isEmpty()) {
-                Toast.makeText(this, "No has enviado solicitudes de asesoría.", Toast.LENGTH_SHORT).show()
+            if (listaSolicitudesBD.isEmpty() && listaSesionesConfirmadasBD.isEmpty()) {
+                Toast.makeText(this, "No tienes asesorías programadas ni solicitudes pendientes.", Toast.LENGTH_SHORT).show()
             } else {
                 val sb = StringBuilder()
-                for (solicitud in listaSolicitudesBD) {
-                    val fechaFormateada = formatearFechaLegible(solicitud.fechaHora)
-                    sb.append("• Docente Destino: ").append(solicitud.correoDocente)
-                        .append("\n• Qué aprender: ").append(solicitud.queAprender)
-                        .append("\n• Objetivo: ").append(solicitud.objetivo)
-                        .append("\n• Modalidad: ").append(solicitud.modalidad)
-                        .append("\n• Fecha y Hora:\n  ").append(fechaFormateada)
-                        .append("\n\n----------------------------------\n\n")
+                
+                // 1. Mostrar Sesiones Confirmadas por Docentes (Prioridad)
+                if (listaSesionesConfirmadasBD.isNotEmpty()) {
+                    sb.append("✅ ASESORÍAS CONFIRMADAS:\n\n")
+                    for (sesion in listaSesionesConfirmadasBD) {
+                        val fecha = formatearFechaLegible(sesion.fechaHora)
+                        sb.append("• Docente: ").append(sesion.correoDocente)
+                            .append("\n  Tema: ").append(sesion.tema)
+                            .append("\n  Modalidad: ").append(sesion.modalidad)
+                            .append("\n  Fecha: ").append(fecha)
+                            .append("\n\n")
+                    }
+                    sb.append("----------------------------------\n\n")
                 }
-                mostrarDialogoPersonalizado("📅 Mis Solicitudes Enviadas", sb.toString().trim(), "Cerrar", null, false, null)
+
+                // 2. Mostrar Solicitudes enviadas por el alumno
+                if (listaSolicitudesBD.isNotEmpty()) {
+                    sb.append("⏳ SOLICITUDES ENVIADAS:\n\n")
+                    for (solicitud in listaSolicitudesBD) {
+                        val fecha = formatearFechaLegible(solicitud.fechaHora)
+                        sb.append("• Para: ").append(solicitud.correoDocente)
+                            .append("\n  Qué aprender: ").append(solicitud.queAprender)
+                            .append("\n  Modalidad: ").append(solicitud.modalidad)
+                            .append("\n  Fecha tentadora: ").append(fecha)
+                            .append("\n\n")
+                    }
+                }
+                
+                mostrarDialogoPersonalizado("📅 Mi Agenda de Asesorías", sb.toString().trim(), "Cerrar", null, false, null)
             }
         }
 
-        // Botón Notificaciones con diseño personalizado
+        // Botón Notificaciones: Prioriza avisar sobre nuevas sesiones confirmadas por el docente
         btnIconoNotificaciones.setOnClickListener {
-            if (listaSolicitudesBD.isEmpty()) {
-                Toast.makeText(this, "No tienes notificaciones nuevas.", Toast.LENGTH_SHORT).show()
+            if (listaSesionesConfirmadasBD.isNotEmpty()) {
+                val ultimaSesion = listaSesionesConfirmadasBD.last()
+                val fecha = formatearFechaLegible(ultimaSesion.fechaHora)
+                val mensaje = "¡Atención! El docente ${ultimaSesion.correoDocente} ha programado una asesoría para ti.\n\n" +
+                        "• Tema: ${ultimaSesion.tema}\n" +
+                        "• Fecha: $fecha\n" +
+                        "• Modalidad: ${ultimaSesion.modalidad}"
+                
+                mostrarDialogoPersonalizado("🔔 Nueva Asesoría Agendada", mensaje, "Entendido", null, false, null)
+            } else if (listaSolicitudesBD.isNotEmpty()) {
+                val ultimaSol = listaSolicitudesBD.last()
+                val fecha = formatearFechaLegible(ultimaSol.fechaHora)
+                val mensaje = "Tu solicitud para ${ultimaSol.correoDocente} ha sido enviada correctamente y está a la espera de confirmación."
+                
+                mostrarDialogoPersonalizado("🔔 Estado de Solicitud", mensaje, "Entendido", null, false, null)
             } else {
-                val ultimaSolicitud = listaSolicitudesBD.last()
-                val fechaFormateada = formatearFechaLegible(ultimaSolicitud.fechaHora)
-                val mensajeNotificacion = "• Destino: ${ultimaSolicitud.correoDocente}\n• Objetivo: ${ultimaSolicitud.objetivo}\n• Programada para:\n  $fechaFormateada"
-
-                mostrarDialogoPersonalizado("🔔 Solicitud Reciente", mensajeNotificacion, "Entendido", null, false, null)
+                Toast.makeText(this, "No tienes notificaciones nuevas.", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -386,6 +416,28 @@ class SolicitudDocente : AppCompatActivity() {
             }
             override fun onFailure(call: Call<List<SolicitudAsesoriaRequest>>, t: Throwable) {
                 Log.e("SUPABASE_SOLICITUDES", "Error al cargar solicitudes del alumno: ${t.message}")
+            }
+        })
+    }
+
+    private fun cargarSesionesConfirmadasDesdeSupabase() {
+        val correoActual = intent.getStringExtra("USUARIO_EMAIL") ?: ""
+        val apiService = obtenerRetrofitConAuth().create(SupabaseApiService::class.java)
+
+        // Filtramos las sesiones donde el alumno participe por su correo
+        val filtroOr = "(correo_docente.eq.$correoActual,correo_alumno.eq.$correoActual)"
+        
+        apiService.getSesionesPorUsuario(filtroOr).enqueue(object : Callback<List<AsesoriaRequest>> {
+            override fun onResponse(call: Call<List<AsesoriaRequest>>, response: Response<List<AsesoriaRequest>>) {
+                runOnUiThread {
+                    if (response.isSuccessful && response.body() != null) {
+                        listaSesionesConfirmadasBD = response.body()!!
+                        Log.d("SUPABASE_SESIONES", "Sesiones confirmadas cargadas: ${listaSesionesConfirmadasBD.size}")
+                    }
+                }
+            }
+            override fun onFailure(call: Call<List<AsesoriaRequest>>, t: Throwable) {
+                Log.e("SUPABASE_SESIONES", "Error al cargar sesiones confirmadas: ${t.message}")
             }
         })
     }

@@ -1,8 +1,6 @@
-# Tareas: Sincronización de Sesión Phone -> Wear
+# Tareas: Resolución de Error de Ejecución
 
-- [x] Añadir dependencias de Wearable Data Layer (si faltan)
-- [x] Implementar `sendUserDataToWear` en `MainActivity.java` (Mobile)
-- [x] Crear `SessionManager.kt` en el módulo Wear
-- [x] Implementar `OnDataChangedListener` en `MainActivity.kt` (Wear)
-- [x] Vincular datos recibidos con las peticiones a Supabase en el reloj
-- [x] Verificar compilación y sincronización
+- [ ] `[ ]` Diferenciar el `namespace` y `applicationId` del módulo `wear`
+- [ ] `[ ]` Añadir ID faltante en el layout del perfil docente
+- [ ] `[ ]` Realizar limpieza y reconstrucción del proyecto
+- [ ] `[ ]` Verificar el flujo de inicio de la aplicación

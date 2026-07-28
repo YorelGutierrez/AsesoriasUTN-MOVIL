@@ -1,32 +1,26 @@
-# Sincronización de Sesión: Phone -> Wear OS
+# Sincronización de Notificaciones: Alumno y Docente
 
-He implementado un sistema de sincronización de identidad que permite al reloj detectar automáticamente quién inició sesión en el teléfono, eliminando los datos fijos de "Vanessa".
+He implementado la lógica necesaria para que los alumnos reciban notificaciones en tiempo real cuando un docente les agenda una asesoría.
 
 ## Cambios realizados
 
-### 1. Módulo Móvil (Emisor)
-- **[MainActivity.java](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/mobile/src/main/java/com/example/asesoriasutn/MainActivity.java)**:
-    - Se integró la **Wearable Data Layer API**.
-    - Al realizar un inicio de sesión exitoso, el teléfono ahora envía un "paquete de datos" al reloj con el nombre del usuario y su correo institucional.
-    - Se añadió el método `sendUserDataToWear` para gestionar este envío de forma segura y urgente.
+### 1. Consulta Multi-Tabla (Red)
+- **[SolicitudDocente.kt](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/mobile/src/main/java/com/example/asesoriasutn/SolicitudDocente.kt)**: La aplicación del alumno ahora consulta dos fuentes de datos en Supabase simultáneamente:
+    - `solicitudes_asesoria`: Sus propias peticiones enviadas.
+    - `sesiones_de_asesoria`: Las citas ya confirmadas y programadas por los docentes.
 
-### 2. Módulo Wear OS (Receptor y Persistencia)
-- **[MainActivity.kt](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/wear/src/main/java/com/example/asesoriasutn/presentation/MainActivity.kt)**:
-    - Se implementó el escucha `OnDataChangedListener` para recibir los datos del teléfono en tiempo real.
-    - Las variables `alumnoConectadoNombre` y `alumnoConectadoEmail` ahora son dinámicas y se actualizan solas al recibir la señal del celular.
-    - Se vincularon estos datos con las peticiones a Supabase, asegurando que las solicitudes de asesoría se registren con la identidad correcta.
-- **[SessionManager.kt](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/wear/src/main/java/com/example/asesoriasutn/presentation/SessionManager.kt)**:
-    - Nueva clase encargada de guardar la identidad del usuario en el almacenamiento local del reloj. Esto permite que el reloj "recuerde" quién eres incluso si se reinicia o pierde conexión temporal con el teléfono.
+### 2. Notificaciones Inteligentes (UI)
+- **Icono de Notificaciones**: Se actualizó la lógica para dar prioridad a las asesorías agendadas por los docentes. Si hay una nueva sesión confirmada, el alumno verá un mensaje claro: *"¡Atención! El docente ha programado una asesoría para ti"*.
+- **Agenda Unificada**: El icono del calendario ahora muestra dos secciones bien diferenciadas:
+    - **ASESORÍAS CONFIRMADAS**: Citas ya programadas por los docentes.
+    - **SOLICITUDES ENVIADAS**: Peticiones del alumno que aún están en espera.
 
-## Cómo probar la sincronización
-1. Asegúrate de que el reloj y el teléfono estén vinculados.
-2. Abre la app en el celular e **inicia sesión** con cualquier cuenta (ej: `tic-310073@utnay.edu.mx`).
-3. Verás que en el reloj, el encabezado cambia automáticamente de "Vanessa" al nombre de usuario correspondiente.
-4. Cualquier solicitud que envíes desde el reloj ahora llegará a Supabase con tu correo real.
+### 3. Filtro de Seguridad
+- Se implementó un filtro estricto por correo electrónico institucional para asegurar que el alumno solo vea sus propias citas y no las de otros compañeros.
 
 ## Verificación
-- El proyecto compila correctamente en ambos módulos (`BUILD SUCCESSFUL`).
-- Se validó el flujo de datos desde Java (Mobile) hacia Kotlin (Wear).
+- **Build**: El proyecto compila correctamente (`BUILD SUCCESSFUL`).
+- **Lógica**: Se integró el método `getSesionesPorUsuario` que utiliza un operador `OR` para buscar al alumno en la base de datos de forma eficiente.
 
 > [!TIP]
-> **Persistencia**: Una vez sincronizado, el reloj mantendrá tu sesión activa. No necesitas tener el celular encendido todo el tiempo para que el reloj sepa quién eres.
+> **Prueba de flujo**: Inicia sesión como docente, agenda una cita para un alumno, y luego entra con la cuenta de ese alumno. Al presionar la campana de notificaciones, debería aparecer el aviso de la nueva asesoría.
