@@ -9,6 +9,10 @@ import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
+import com.google.android.gms.wearable.Wearable;
+
 public class MainActivity extends AppCompatActivity {
 
     private EditText txtCorreo, txtPassword;
@@ -52,34 +56,65 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // 1. CASO ADMINISTRADOR
-        if (correoMinuscula.equals("admin@utnay.edu.mx")) {
-            Toast.makeText(this, "¡Bienvenido Administrador!", Toast.LENGTH_SHORT).show();
+        String usuario = correoMinuscula.split("@")[0];
 
-            // Redirige al nuevo menú con las dos opciones para el administrador
-            Intent intent = new Intent(MainActivity.this, MenuAdminActivity.class);
-            startActivity(intent);
+        // 1. CASO ADMINISTRADOR
+        if (usuario.equals("admin")) {
+            if (password.equals("12345678")) {
+                Toast.makeText(this, "¡Bienvenido Administrador!", Toast.LENGTH_SHORT).show();
+
+                sendUserDataToWear("Administrador", correoMinuscula);
+
+                Intent intent = new Intent(MainActivity.this, MenuAdminActivity.class);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "usuario o contraseña incorrecto", Toast.LENGTH_SHORT).show();
+            }
             return;
         }
 
         // 2. CASO ALUMNO (Contiene guion y números, ej: tic-310010)
-        String usuario = correoMinuscula.split("@")[0];
         if (usuario.contains("-") || usuario.matches(".*\\d.*")) {
-            Toast.makeText(this, "¡Bienvenido Alumno!", Toast.LENGTH_SHORT).show();
+            if (password.equals(usuario)) {
+                Toast.makeText(this, "¡Bienvenido Alumno!", Toast.LENGTH_SHORT).show();
 
-            Intent intent = new Intent(MainActivity.this, SolicitudDocente.class);
-            intent.putExtra("USUARIO_EMAIL", correoMinuscula);
-            intent.putExtra("MATRICULA_O_NOMBRE", usuario);
-            startActivity(intent);
+                sendUserDataToWear(usuario, correoMinuscula);
 
+                Intent intent = new Intent(MainActivity.this, SolicitudDocente.class);
+                intent.putExtra("USUARIO_EMAIL", correoMinuscula);
+                intent.putExtra("MATRICULA_O_NOMBRE", usuario);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "usuario o contraseña incorrecto", Toast.LENGTH_SHORT).show();
+            }
         } else {
             // 3. CASO DOCENTE (ej: juan@utnay.edu.mx)
-            Toast.makeText(this, "¡Bienvenido Docente!", Toast.LENGTH_SHORT).show();
+            if (password.equals("12345678")) {
+                Toast.makeText(this, "¡Bienvenido Docente!", Toast.LENGTH_SHORT).show();
 
-            Intent intent = new Intent(MainActivity.this, AgendarAsesoria.class);
-            intent.putExtra("USUARIO_EMAIL", correoMinuscula);
-            intent.putExtra("USUARIO_NOMBRE", usuario);
-            startActivity(intent);
+                sendUserDataToWear(usuario, correoMinuscula);
+
+                Intent intent = new Intent(MainActivity.this, AgendarAsesoria.class);
+                intent.putExtra("USUARIO_EMAIL", correoMinuscula);
+                intent.putExtra("USUARIO_NOMBRE", usuario);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "usuario o contraseña incorrecto", Toast.LENGTH_SHORT).show();
+            }
         }
+    }
+
+    private void sendUserDataToWear(String nombre, String email) {
+        PutDataMapRequest dataMap = PutDataMapRequest.create("/user_session");
+        dataMap.getDataMap().putString("nombre", nombre);
+        dataMap.getDataMap().putString("email", email);
+        dataMap.getDataMap().putLong("timestamp", System.currentTimeMillis());
+
+        PutDataRequest request = dataMap.asPutDataRequest();
+        request.setUrgent();
+
+        Wearable.getDataClient(this).putDataItem(request)
+                .addOnSuccessListener(dataItem -> Log.d("WEAR_SYNC", "Datos enviados al reloj: " + nombre))
+                .addOnFailureListener(e -> Log.e("WEAR_SYNC", "Fallo al sincronizar con el reloj", e));
     }
 }
