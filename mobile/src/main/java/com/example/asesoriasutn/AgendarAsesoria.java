@@ -201,7 +201,12 @@ public class AgendarAsesoria extends AppCompatActivity {
         String iniciales = usuarioSesion.length() >= 2 ? usuarioSesion.substring(0, 2).toUpperCase() : "DT";
         tvAvatarUsuario.setText(iniciales);
 
-        tvAvatarUsuario.setOnClickListener(v -> mostrarDialogoCerrarSesionPersonalizado());
+        //Nuevo
+        tvAvatarUsuario.setOnClickListener(v -> {
+            Intent intent = new Intent(AgendarAsesoria.this, perfil_docente.class);
+            startActivity(intent);
+        });
+
         btnRegresar.setOnClickListener(v -> mostrarDialogoCerrarSesionPersonalizado());
 
         // Botón Calendario: Muestra las solicitudes de asesoría hechas por los alumnos hacia este docente

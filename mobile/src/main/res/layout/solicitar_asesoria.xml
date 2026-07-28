@@ -19,13 +19,16 @@
             android:layout_width="match_parent"
             android:layout_height="68dp"
             android:layout_marginTop="24dp"
-            android:background="#059669"
+            android:background="@drawable/bg_toolbar"
+            android:elevation="10dp"
+            android:translationZ="10dp"
             android:gravity="center_vertical"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
             android:orientation="horizontal"
-            android:paddingHorizontal="20dp"
-            android:elevation="4dp">
+            android:paddingHorizontal="20dp">
 
-            <!-- Flecha de Regreso -->
+            <!-- Flecha de Regresar -->
             <ImageView
                 android:id="@+id/btnRegresar"
                 android:layout_width="28dp"
@@ -59,7 +62,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:contentDescription="Calendario"
-                    android:src="@android:drawable/ic_menu_my_calendar"
+                    android:src="@drawable/ic_calendar"
                     app:tint="#FFFFFF" />
 
                 <!-- Icono Notificaciones -->
@@ -71,19 +74,19 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:contentDescription="Notificaciones"
-                    android:src="@android:drawable/ic_menu_info_details"
+                    android:src="@drawable/ic_notification"
                     app:tint="#FFFFFF" />
 
                 <!-- Avatar Usuario -->
                 <TextView
-                    android:id="@+id/btnAvatarUsuario"
+                    android:id="@+id/tvAvatarUsuario"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
-                    android:background="@drawable/ic_launcher_background"
+                    android:background="@drawable/avatar_circular"
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center"
-                    android:text="JM"
+                    android:text="--"
                     android:textColor="#FFFFFF"
                     android:textSize="13sp"
                     android:textStyle="bold" />
@@ -181,6 +184,7 @@
                     <Spinner
                         android:id="@+id/spinnerDocentes"
                         android:layout_width="match_parent"
+                        android:textColor="@color/black"
                         android:layout_height="48dp"
                         android:background="@android:drawable/btn_dropdown" />
                 </LinearLayout>
@@ -259,6 +263,7 @@
                         android:hint="Ej. Me gustaría repasar derivadas, necesito ayuda con programación..."
                         android:inputType="textMultiLine"
                         android:minLines="4"
+                        android:textColor="@color/black"
                         android:padding="12dp"
                         android:textSize="14sp"
                         android:layout_marginBottom="16dp"/>
@@ -330,6 +335,7 @@
                     <Spinner
                         android:id="@+id/spModalidad"
                         android:layout_width="match_parent"
+                        android:textColor="@color/black"
                         android:layout_height="48dp"
                         android:background="@android:drawable/btn_dropdown" />
 
@@ -380,8 +386,14 @@
                         android:id="@+id/calendarView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
                         android:background="#FFFFFF"
-                        android:layout_marginBottom="16dp" />
+
+                        android:focusedMonthDateColor="#000000"
+                        android:unfocusedMonthDateColor="#9E9E9E"
+                        android:selectedWeekBackgroundColor="#0D9488"
+                        android:weekSeparatorLineColor="#E0E0E0"
+                        android:weekNumberColor="#0D9488" />
 
                     <!-- Selector de Hora -->
                     <com.google.android.material.textfield.TextInputLayout
@@ -396,10 +408,11 @@
                             android:id="@+id/etHora"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:textColor="@color/black"
                             android:focusable="false"
                             android:clickable="true"
                             android:inputType="none" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                        </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Botón Enviar Solicitud -->
                     <Button

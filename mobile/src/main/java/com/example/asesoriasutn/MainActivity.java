@@ -118,3 +118,4 @@ public class MainActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> Log.e("WEAR_SYNC", "Fallo al sincronizar con el reloj", e));
     }
 }
+
