@@ -17,7 +17,7 @@ He detectado un conflicto potencial en la configuración del proyecto que podrí
 - Cambiar `namespace` a `com.example.asesoriasutn.wear`.
 - Cambiar `applicationId` a `com.example.asesoriasutn.wear` para evitar conflictos de instalación en el mismo entorno de desarrollo.
 
-### [UI Layer]
+### [Wear Module]
 
 #### [MODIFY] [wear/src/main/java/com/example/asesoriasutn/presentation/MainActivity.kt](file:///C:/Users/vanes/AndroidStudioProjects/AsesoriasUTN-MOVIL/wear/src/main/java/com/example/asesoriasutn/presentation/MainActivity.kt)
 - Actualizar los *imports* automáticos que utilicen el nuevo `namespace`.

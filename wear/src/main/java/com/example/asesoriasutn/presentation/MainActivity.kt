@@ -156,6 +156,16 @@ fun createNotificationChannel(context: Context) {
     }
 }
 
+fun createNotificationChannel(context: Context) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val channel = NotificationChannel("asesorias_channel", "Canal de Asesorias", NotificationManager.IMPORTANCE_HIGH).apply {
+            description = "Notificaciones de asesorías"
+        }
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.createNotificationChannel(channel)
+    }
+}
+
 @Composable
 fun WearApp(
     alumnoActual: String,
