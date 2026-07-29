@@ -1,4 +1,4 @@
-package com.example.asesoriasutn.presentation
+package com.example.asesoriasutn.wear.presentation
 
 import android.content.Intent
 import android.os.Bundle
@@ -19,9 +19,9 @@ import androidx.wear.compose.foundation.lazy.rememberTransformingLazyColumnState
 import androidx.wear.compose.material3.*
 import androidx.wear.compose.material3.lazy.rememberTransformationSpec
 import androidx.wear.compose.material3.lazy.transformedHeight
-import com.example.asesoriasutn.presentation.models.SolicitudAsesoriaWearRequest
-import com.example.asesoriasutn.presentation.network.RetrofitClient
-import com.example.asesoriasutn.presentation.theme.AsesoriasUTNTheme
+import com.example.asesoriasutn.wear.presentation.models.SolicitudAsesoriaWearRequest
+import com.example.asesoriasutn.wear.presentation.network.RetrofitClient
+import com.example.asesoriasutn.wear.presentation.theme.AsesoriasUTNTheme
 import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.DataEvent
 import com.google.android.gms.wearable.DataEventBuffer

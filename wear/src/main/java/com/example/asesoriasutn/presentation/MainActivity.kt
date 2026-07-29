@@ -1,4 +1,4 @@
-package com.example.asesoriasutn.presentation
+package com.example.asesoriasutn.wear.presentation
 
 import android.Manifest
 import android.app.NotificationChannel
@@ -52,10 +52,10 @@ import androidx.wear.compose.material3.lazy.rememberTransformationSpec
 import androidx.wear.compose.material3.lazy.transformedHeight
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
-import com.example.asesoriasutn.presentation.models.Docente
-import com.example.asesoriasutn.presentation.models.SolicitudAsesoriaWearRequest
-import com.example.asesoriasutn.presentation.network.RetrofitClient
-import com.example.asesoriasutn.presentation.theme.AsesoriasUTNTheme
+import com.example.asesoriasutn.wear.presentation.models.Docente
+import com.example.asesoriasutn.wear.presentation.models.SolicitudAsesoriaWearRequest
+import com.example.asesoriasutn.wear.presentation.network.RetrofitClient
+import com.example.asesoriasutn.wear.presentation.theme.AsesoriasUTNTheme
 import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.DataEvent
 import com.google.android.gms.wearable.DataEventBuffer

@@ -1,4 +1,4 @@
-package com.example.asesoriasutn.presentation.theme
+package com.example.asesoriasutn.wear.presentation.theme
 
 import androidx.compose.runtime.Composable
 import androidx.wear.compose.material3.MaterialTheme

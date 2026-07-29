@@ -1,4 +1,4 @@
-package com.example.asesoriasutn.presentation.models
+package com.example.asesoriasutn.wear.presentation.models
 
 import com.google.gson.annotations.SerializedName
 

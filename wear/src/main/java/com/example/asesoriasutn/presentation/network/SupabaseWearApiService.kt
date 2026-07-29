@@ -1,7 +1,7 @@
-package com.example.asesoriasutn.presentation.network
+package com.example.asesoriasutn.wear.presentation.network
 
-import com.example.asesoriasutn.presentation.models.Docente
-import com.example.asesoriasutn.presentation.models.SolicitudAsesoriaWearRequest
+import com.example.asesoriasutn.wear.presentation.models.Docente
+import com.example.asesoriasutn.wear.presentation.models.SolicitudAsesoriaWearRequest
 import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Retrofit

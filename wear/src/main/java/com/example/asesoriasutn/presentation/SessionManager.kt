@@ -1,4 +1,4 @@
-package com.example.asesoriasutn.presentation
+package com.example.asesoriasutn.wear.presentation
 
 import android.content.Context
 import android.content.SharedPreferences
