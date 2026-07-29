@@ -26,6 +26,11 @@ class SessionManager(context: Context) {
     fun getUserRole(): String? = prefs.getString(KEY_USER_ROLE, "alumno")
 
     fun clearSession() {
-        prefs.edit().clear().apply()
+        prefs.edit().apply {
+            putString(KEY_USER_NAME, "Vanessa")
+            putString(KEY_USER_EMAIL, "vanessa@utnay.edu.mx")
+            putString(KEY_USER_ROLE, "alumno")
+            apply()
+        }
     }
 }

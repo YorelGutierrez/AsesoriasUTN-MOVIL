@@ -231,6 +231,13 @@ class MainActivity : ComponentActivity(), SensorEventListener, DataClient.OnData
                 val email = dataMap.getString("email", "vanessa@utnay.edu.mx")
                 val role = dataMap.getString("role", "alumno")
 
+                if (role == "logout") {
+                    sessionManager.clearSession()
+                    alumnoConectadoNombre = "Vanessa"
+                    alumnoConectadoEmail = "vanessa@utnay.edu.mx"
+                    return
+                }
+
                 sessionManager.saveSession(nombre, email, role)
                 
                 if (role == "docente" || role == "admin") {
