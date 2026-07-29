@@ -341,6 +341,7 @@ public class AgendarAsesoria extends AppCompatActivity {
     }
 
     private void cerrarSesionYIrALogin() {
+        MainActivity.clearWearSession(this);
         Intent intent = new Intent(AgendarAsesoria.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

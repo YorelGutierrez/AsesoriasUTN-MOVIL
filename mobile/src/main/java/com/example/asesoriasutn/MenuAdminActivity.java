@@ -111,6 +111,7 @@ public class MenuAdminActivity extends AppCompatActivity {
     }
 
     private void cerrarSesionYIrALogin() {
+        MainActivity.clearWearSession(this);
         Intent intent = new Intent(MenuAdminActivity.this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

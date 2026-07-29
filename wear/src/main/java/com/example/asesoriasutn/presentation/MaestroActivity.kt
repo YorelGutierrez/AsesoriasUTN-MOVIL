@@ -106,13 +106,17 @@ class MaestroActivity : ComponentActivity(), DataClient.OnDataChangedListener {
                 val dataMap = DataMapItem.fromDataItem(event.dataItem).dataMap
                 val role = dataMap.getString("role", "alumno")
                 
-                if (role == "alumno") {
+                if (role == "logout" || role == "alumno") {
+                    sessionManager.clearSession()
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()
                 } else {
-                    maestroNombre = dataMap.getString("nombre", "Maestro")
-                    maestroEmail = dataMap.getString("email", "")
-                    sessionManager.saveSession(maestroNombre, maestroEmail, role)
+                    val nombre = dataMap.getString("nombre", "Maestro")
+                    val email = dataMap.getString("email", "")
+                    
+                    maestroNombre = nombre
+                    maestroEmail = email
+                    sessionManager.saveSession(nombre, email, role)
                 }
             }
         }

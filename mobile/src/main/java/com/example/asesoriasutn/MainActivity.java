@@ -67,12 +67,13 @@ public class MainActivity extends AppCompatActivity {
         // 1. CASO ADMINISTRADOR
         if (usuario.equals("admin")) {
             if (password.equals("12345678")) {
-                Toast.makeText(this, "¡Bienvenido Administrador!", Toast.LENGTH_SHORT).show();
+                String nombreAdmin = usuario.substring(0, 1).toUpperCase() + usuario.substring(1);
+                Toast.makeText(this, "¡Bienvenido " + nombreAdmin + "!", Toast.LENGTH_SHORT).show();
 
-                sendUserDataToWear("Administrador", correoMinuscula, "admin");
+                sendUserDataToWear(nombreAdmin, correoMinuscula, "admin");
 
                 Intent intent = new Intent(MainActivity.this, MenuAdminActivity.class);
-                intent.putExtra("USUARIO_NOMBRE", "Administrador");
+                intent.putExtra("USUARIO_NOMBRE", nombreAdmin);
                 intent.putExtra("USUARIO_EMAIL", correoMinuscula);
                 intent.putExtra("IS_ADMIN", true);
                 startActivity(intent);
@@ -117,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendUserDataToWear(String nombre, String email, String role) {
         try {
-            Log.d("WEAR_SYNC", "Iniciando sincronización para: " + nombre + " con rol: " + role);
+            Log.d("WEAR_SYNC", "Enviando al reloj -> Nombre: " + nombre + " | Email: " + email + " | Rol: " + role);
             PutDataMapRequest dataMap = PutDataMapRequest.create("/user_session");
             dataMap.getDataMap().putString("nombre", nombre);
             dataMap.getDataMap().putString("email", email);
@@ -128,11 +129,28 @@ public class MainActivity extends AppCompatActivity {
             request.setUrgent();
 
             Wearable.getDataClient(this).putDataItem(request)
-                    .addOnSuccessListener(dataItem -> Log.d("WEAR_SYNC", "Datos enviados al reloj: " + nombre))
-                    .addOnFailureListener(e -> Log.e("WEAR_SYNC", "Fallo al sincronizar con el reloj", e));
+                    .addOnSuccessListener(dataItem -> Log.d("WEAR_SYNC", "Sincronización exitosa"))
+                    .addOnFailureListener(e -> Log.e("WEAR_SYNC", "Fallo al sincronizar", e));
         } catch (Exception e) {
-            Log.e("WEAR_SYNC", "Error crítico al intentar conectar con Wearable API", e);
-            // No bloqueamos el flujo principal si el reloj falla
+            Log.e("WEAR_SYNC", "Error crítico en comunicación Wearable", e);
+        }
+    }
+
+    public static void clearWearSession(android.content.Context context) {
+        try {
+            PutDataMapRequest dataMap = PutDataMapRequest.create("/user_session");
+            dataMap.getDataMap().putString("nombre", "");
+            dataMap.getDataMap().putString("email", "");
+            dataMap.getDataMap().putString("role", "logout");
+            dataMap.getDataMap().putLong("timestamp", System.currentTimeMillis());
+
+            PutDataRequest request = dataMap.asPutDataRequest();
+            request.setUrgent();
+
+            Wearable.getDataClient(context).putDataItem(request);
+            Log.d("WEAR_SYNC", "Se envió señal de cierre de sesión al reloj");
+        } catch (Exception e) {
+            Log.e("WEAR_SYNC", "Error al enviar señal de cierre", e);
         }
     }
 }
